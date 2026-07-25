@@ -1,0 +1,794 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Televendas — protótipo mobile</title>
+<style>
+  /* ============================================================
+     Tokens — arquivo Figma "MCP Apps for Claude"
+     ============================================================ */
+  :root{
+    --bg-primary:#ffffff; --bg-secondary:#f5f4ed; --bg-tertiary:#faf9f5;
+    --bg-inverse:#141413; --bg-300:#f0efec;
+    --bg-info:#d6e4f6; --bg-success:#e9f1dc; --bg-warning:#f6eedf;
+
+    --tx-primary:#141413; --tx-secondary:#3d3d3a; --tx-tertiary:#73726c;
+    --tx-inverse:#ffffff; --tx-info:#3266ad; --tx-success:#265b19; --tx-warning:#5a4815;
+
+    --bd-primary:rgba(31,30,29,.4); --bd-secondary:rgba(31,30,29,.3); --bd-tertiary:rgba(31,30,29,.15);
+    --bd-info:#4682d5; --bd-success:#437426;
+
+    --ring-primary:rgba(20,20,19,.7); --ring-info:rgba(50,102,173,.5); --ring-danger:rgba(167,61,57,.5);
+
+    --brand:#c6613f; --brand-hover:#b5573a;
+    --navbtn:rgba(255,255,255,.6);
+
+    --r-xs:4px; --r-sm:6px; --r-md:8px; --r-lg:10px; --r-xl:12px; --r-2xl:16px;
+    --r-24:24px; --r-full:9999px;
+
+    --f-sans:'Anthropic Sans','Styrene B',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    --f-serif:'Tiempos Text','Iowan Old Style',Georgia,'Times New Roman',serif;
+    --f-mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+
+    --hover:rgba(31,30,29,.06);
+  }
+  .phone[data-theme="dark"]{
+    --bg-primary:#30302e; --bg-secondary:#262624; --bg-tertiary:#141413;
+    --bg-inverse:#faf9f5; --bg-300:#3a3a37;
+    --bg-info:#253e5f; --bg-success:#1b4614; --bg-warning:#483a0f;
+
+    --tx-primary:#faf9f5; --tx-secondary:#c2c0b6; --tx-tertiary:#9c9a92;
+    --tx-inverse:#141413; --tx-info:#80aadd; --tx-success:#7ab948; --tx-warning:#d1a041;
+
+    --bd-primary:rgba(222,220,209,.4); --bd-secondary:rgba(222,220,209,.3); --bd-tertiary:rgba(222,220,209,.15);
+    --bd-success:#599130;
+
+    --ring-primary:rgba(250,249,245,.7); --ring-info:rgba(128,170,221,.5); --ring-danger:rgba(205,92,88,.5);
+
+    --navbtn:rgba(255,255,255,.08);
+    --hover:rgba(255,255,255,.07);
+  }
+
+  *{box-sizing:border-box}
+  body{
+    margin:0;padding:40px 16px 64px;background:#eceae4;
+    font-family:var(--f-sans);color:#141413;
+    display:flex;flex-direction:column;align-items:center;gap:16px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .pagebar{width:402px;max-width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .pagebar h1{font-size:18px;font-weight:600;margin:0;letter-spacing:-.01em}
+  .themebtn{
+    height:32px;padding:0 12px;border-radius:8px;cursor:pointer;font-family:inherit;font-size:13px;
+    border:.5px solid rgba(31,30,29,.4);background:transparent;color:#141413;
+  }
+
+  /* ============================ Phone ============================ */
+  .phone{
+    width:402px;height:874px;max-width:100%;position:relative;overflow:hidden;
+    border-radius:48px;border:1px solid rgba(31,30,29,.3);
+    box-shadow:0 8px 24px rgba(0,0,0,.12);
+    background:var(--bg-tertiary);color:var(--tx-primary);
+    display:flex;flex-direction:column;
+  }
+  .phone[data-theme="dark"]{border-color:rgba(222,220,209,.2)}
+
+  /* status bar */
+  .statusbar{
+    height:50px;flex:0 0 50px;padding:21px 16px 0;display:flex;align-items:center;
+    justify-content:space-between;position:relative;z-index:4;
+  }
+  .statusbar .time{font-size:17px;font-weight:600;letter-spacing:-.2px}
+  .statusbar .levels{display:flex;gap:7px;align-items:center;color:var(--tx-primary)}
+
+  /* nav bar */
+  .navbar{
+    height:54px;flex:0 0 54px;padding:0 16px;display:flex;align-items:center;
+    justify-content:space-between;gap:8px;position:relative;z-index:4;
+  }
+  .navbtn{
+    width:44px;height:44px;flex:0 0 44px;border-radius:var(--r-full);border:0;cursor:pointer;
+    background:var(--navbtn);box-shadow:0 2px 8px rgba(0,0,0,.08);
+    display:grid;place-items:center;color:var(--tx-primary);
+  }
+  .phone[data-theme="dark"] .navbtn{box-shadow:none}
+  .navbtn:disabled{opacity:.35;cursor:default}
+  .navbtn:focus-visible{outline:none;box-shadow:0 0 0 2px var(--bg-tertiary),0 0 0 3.5px var(--ring-info)}
+  .navbtn svg{width:24px;height:24px}
+  .navttl{flex:1;text-align:center;min-width:0}
+  .navttl .t{font-size:17px;font-weight:600;line-height:1.2}
+  .navttl .s{font-family:var(--f-mono);font-size:11px;color:var(--tx-tertiary);margin-top:1px}
+  .callpill{
+    display:flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:var(--r-full);
+    background:var(--bg-success);color:var(--tx-success);border:.5px solid var(--bd-success);
+    font-size:11px;flex:0 0 auto;
+  }
+  .callpill .pip{width:6px;height:6px;border-radius:50%;background:currentColor;animation:pulse 2s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+  .callpill .t{font-family:var(--f-mono);font-size:11px}
+
+  /* stepper */
+  .steps{display:flex;gap:6px;padding:4px 16px 12px;flex:0 0 auto;position:relative;z-index:4}
+  .stp{flex:1;background:transparent;border:0;padding:0;cursor:pointer;text-align:left}
+  .stp .bar{height:3px;border-radius:2px;background:var(--bd-tertiary);margin-bottom:6px}
+  .stp .lb{font-size:10px;color:var(--tx-tertiary);letter-spacing:.02em}
+  .stp[aria-current="true"] .bar{background:var(--bg-inverse)}
+  .stp[aria-current="true"] .lb{color:var(--tx-primary);font-weight:600}
+  .stp.done .bar{background:var(--bd-success)}
+  .stp:disabled{cursor:default;opacity:.5}
+  .stp:focus-visible{outline:none}
+  .stp:focus-visible .bar{box-shadow:0 0 0 2px var(--bg-tertiary),0 0 0 3.5px var(--ring-info)}
+
+  /* scroll */
+  .scroll{flex:1 1 auto;min-height:0;overflow-y:auto;padding:4px 16px 20px;position:relative;z-index:1}
+  .scroll::-webkit-scrollbar{width:0}
+
+  h2.sec{font-size:20px;font-weight:600;letter-spacing:-.01em;margin:8px 0 4px}
+  p.sub{margin:0 0 16px;font-size:13px;line-height:1.5;color:var(--tx-tertiary)}
+
+  /* ============================ Controls ============================ */
+  .field{
+    width:100%;height:44px;padding:0 14px;border-radius:var(--r-xl);font-family:inherit;font-size:15px;
+    border:1px solid var(--bd-secondary);background:var(--bg-primary);color:var(--tx-primary);
+  }
+  .field::placeholder{color:var(--tx-tertiary)}
+  .field:focus{outline:none;border-color:var(--bd-primary);
+    box-shadow:0 0 0 2px var(--bg-primary),0 0 0 3.5px var(--ring-info)}
+  .search{position:relative;margin-bottom:12px}
+  .search .field{padding-left:42px}
+  .search > svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:20px;height:20px;color:var(--tx-tertiary);pointer-events:none}
+
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    font-family:inherit;font-weight:600;border:0;cursor:pointer;white-space:nowrap;
+    height:44px;padding:0 18px;border-radius:var(--r-xl);font-size:15px;
+  }
+  .btn svg{width:18px;height:18px}
+  .btn.primary{background:var(--bg-inverse);color:var(--tx-inverse)}
+  .btn.primary:focus-visible{outline:none;box-shadow:0 0 0 2px var(--bg-tertiary),0 0 0 3.5px var(--ring-primary)}
+  .btn.brand{background:var(--brand);color:#fff}
+  .btn.brand:active{background:var(--brand-hover)}
+  .btn.brand:focus-visible{outline:none;box-shadow:0 0 0 2px var(--bg-tertiary),0 0 0 3.5px var(--ring-danger)}
+  .btn.secondary{background:transparent;color:var(--tx-primary);border:.5px solid var(--bd-primary)}
+  .btn.secondary:focus-visible{outline:none;box-shadow:0 0 0 2px var(--bg-tertiary),0 0 0 3.5px var(--ring-info)}
+  .btn.sm{height:32px;padding:0 12px;border-radius:var(--r-md);font-size:13px}
+  .btn.block{width:100%}
+  .btn:disabled{opacity:.5;cursor:default}
+
+  .chiprow{display:flex;gap:8px;overflow-x:auto;padding-bottom:12px;margin-bottom:4px;scrollbar-width:none}
+  .chiprow::-webkit-scrollbar{display:none}
+  .chip{
+    height:32px;padding:0 14px;border-radius:var(--r-full);border:.5px solid var(--bd-secondary);
+    background:transparent;color:var(--tx-secondary);cursor:pointer;font-family:inherit;font-size:13px;
+    flex:0 0 auto;
+  }
+  .chip[aria-pressed="true"]{background:var(--bg-inverse);color:var(--tx-inverse);border-color:transparent}
+  .chip:focus-visible{outline:none;box-shadow:0 0 0 2px var(--bg-tertiary),0 0 0 3.5px var(--ring-info)}
+
+  .tag{display:inline-flex;align-items:center;height:20px;padding:0 7px;border-radius:var(--r-xs);font-size:10px;font-weight:600}
+  .tag.info{background:var(--bg-info);color:var(--tx-info)}
+  .tag.success{background:var(--bg-success);color:var(--tx-success)}
+  .tag.warning{background:var(--bg-warning);color:var(--tx-warning)}
+
+  /* cards */
+  .list{display:flex;flex-direction:column;gap:8px}
+  .card{
+    display:flex;align-items:center;gap:12px;padding:14px;width:100%;text-align:left;
+    background:var(--bg-primary);border:.5px solid var(--bd-tertiary);border-radius:var(--r-2xl);
+    font-family:inherit;color:inherit;cursor:pointer;
+  }
+  .card:focus-visible{outline:none;box-shadow:0 0 0 2px var(--bg-tertiary),0 0 0 3.5px var(--ring-info)}
+  .card .ico{
+    width:40px;height:40px;flex:0 0 40px;border-radius:var(--r-xl);background:var(--bg-300);
+    display:grid;place-items:center;font-size:13px;font-weight:600;color:var(--tx-secondary);
+  }
+  .card .b{flex:1;min-width:0}
+  .card .n{font-size:15px;font-weight:600;line-height:1.3}
+  .card .m{font-size:11px;line-height:1.45;color:var(--tx-tertiary);margin-top:3px}
+  .card .m .mono{font-family:var(--f-mono)}
+  .price{font-family:var(--f-serif);font-size:16px;line-height:1.2;white-space:nowrap}
+  .price .cents{font-size:12px}
+
+  .selected{
+    padding:16px;margin-bottom:16px;background:var(--bg-primary);
+    border:.5px solid var(--bd-secondary);border-radius:var(--r-2xl);
+  }
+  .selected .top{display:flex;align-items:center;gap:12px}
+  .selected .ico{
+    width:44px;height:44px;flex:0 0 44px;border-radius:var(--r-xl);background:var(--bg-300);
+    display:grid;place-items:center;font-size:14px;font-weight:600;color:var(--tx-secondary);
+  }
+  .selected .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+  .kv .k{font-size:10px;color:var(--tx-tertiary);margin-bottom:2px}
+  .kv .v{font-size:13px;line-height:1.35}
+  .kv .v.mono{font-family:var(--f-mono);font-size:12px}
+
+  /* qty */
+  .qty{display:flex;align-items:center;border:.5px solid var(--bd-secondary);border-radius:var(--r-md);height:34px;flex:0 0 auto}
+  .qty button{
+    width:32px;height:100%;border:0;background:transparent;cursor:pointer;color:var(--tx-primary);
+    display:grid;place-items:center;border-radius:var(--r-sm);
+  }
+  .qty button:focus-visible{outline:none;box-shadow:0 0 0 2px var(--bg-primary),0 0 0 3.5px var(--ring-info)}
+  .qty svg{width:13px;height:13px}
+  .qty .n{min-width:28px;text-align:center;font-size:13px;font-family:var(--f-mono)}
+
+  /* form */
+  .form{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}
+  .lbl{display:block;font-size:11px;color:var(--tx-secondary);margin-bottom:5px}
+  .c4{grid-column:span 4}.c5{grid-column:span 5}.c7{grid-column:span 7}
+  .c8{grid-column:span 8}.c9{grid-column:span 9}.c12{grid-column:span 12}
+
+  /* radio option */
+  .opt{
+    display:flex;align-items:center;gap:12px;padding:14px;cursor:pointer;
+    background:var(--bg-primary);border:.5px solid var(--bd-tertiary);border-radius:var(--r-2xl);
+  }
+  .opt:has(input:checked){border-color:var(--bd-info);box-shadow:0 0 0 1px var(--bd-info)}
+  .opt input{
+    appearance:none;-webkit-appearance:none;margin:0;width:22px;height:22px;flex:0 0 22px;
+    border:.5px solid var(--bd-primary);border-radius:var(--r-full);background:var(--bg-primary);
+    display:grid;place-items:center;cursor:pointer;
+  }
+  .opt input:checked{border:1px solid var(--bd-info);padding:3px}
+  .opt input:checked::after{content:'';width:100%;height:100%;border-radius:var(--r-full);background:var(--bd-info)}
+  .opt input:focus-visible{outline:none;box-shadow:0 0 0 2px var(--bg-primary),0 0 0 3.5px var(--ring-info)}
+  .opt .b{flex:1;min-width:0}
+  .opt .t{font-size:15px;font-weight:600}
+  .opt .d{font-size:12px;color:var(--tx-tertiary);margin-top:2px}
+
+  .linkrow{
+    display:flex;align-items:center;gap:8px;margin-top:12px;padding:10px 12px;
+    background:var(--bg-secondary);border-radius:var(--r-xl);border:.5px solid var(--bd-tertiary);
+  }
+  .linkrow code{flex:1;font-family:var(--f-mono);font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--tx-secondary)}
+
+  .summary{
+    background:var(--bg-primary);border:.5px solid var(--bd-tertiary);border-radius:var(--r-2xl);
+    padding:16px;margin-top:16px;
+  }
+
+  /* success */
+  .success{display:flex;flex-direction:column;align-items:center;gap:14px;padding:24px 0;text-align:center}
+  .success .mark{
+    width:64px;height:64px;border-radius:var(--r-full);background:var(--bg-success);color:var(--tx-success);
+    display:grid;place-items:center;
+  }
+  .success .mark svg{width:30px;height:30px}
+  .success h2{margin:0;font-family:var(--f-serif);font-size:24px;font-weight:400;letter-spacing:-.25px;line-height:1.25}
+  .success p{margin:0;font-size:14px;line-height:1.55;color:var(--tx-tertiary)}
+
+  /* ============================ Bottom bar ============================ */
+  .bottombar{
+    flex:0 0 auto;padding:12px 16px 34px;background:var(--bg-primary);
+    border-top:.5px solid var(--bd-tertiary);display:flex;align-items:center;gap:12px;
+    position:relative;z-index:4;
+  }
+  .cartbtn{
+    display:flex;flex-direction:column;align-items:flex-start;gap:1px;background:transparent;border:0;
+    cursor:pointer;font-family:inherit;color:var(--tx-primary);padding:4px 6px;border-radius:var(--r-md);
+    flex:0 0 auto;
+  }
+  .cartbtn:focus-visible{outline:none;box-shadow:0 0 0 2px var(--bg-primary),0 0 0 3.5px var(--ring-info)}
+  .cartbtn .c{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--tx-tertiary)}
+  .cartbtn .c svg{width:14px;height:14px}
+  .cartbtn .v{font-family:var(--f-serif);font-size:20px;line-height:1.1}
+  .cartbtn .v .cents{font-size:13px}
+  .bottombar .btn{flex:1}
+
+  /* ============================ Sheet ============================ */
+  .scrim{
+    position:absolute;inset:0;z-index:8;background:rgba(0,0,0,.28);
+    opacity:0;pointer-events:none;transition:opacity .25s ease;
+  }
+  .phone.sheet-open .scrim{opacity:1;pointer-events:auto}
+  .sheet{
+    position:absolute;left:0;right:0;bottom:0;z-index:9;max-height:78%;
+    background:var(--bg-primary);border-radius:24px 24px 48px 48px;
+    display:flex;flex-direction:column;
+    transform:translateY(102%);transition:transform .3s cubic-bezier(.32,.72,0,1);
+    box-shadow:0 -8px 32px rgba(0,0,0,.18);
+  }
+  .phone.sheet-open .sheet{transform:translateY(0)}
+  .sheet .handle{padding:10px 0 4px;display:flex;justify-content:center;flex:0 0 auto}
+  .sheet .handle i{width:40px;height:4px;border-radius:2px;background:var(--bd-secondary);display:block}
+  .sheet .shead{
+    padding:8px 20px 12px;display:flex;align-items:center;justify-content:space-between;flex:0 0 auto;
+    border-bottom:.5px solid var(--bd-tertiary);
+  }
+  .sheet .shead h3{margin:0;font-size:17px;font-weight:600}
+  .sheet .slist{flex:1 1 auto;overflow-y:auto;padding:4px 20px}
+  .sheet .slist::-webkit-scrollbar{width:0}
+  .citem{display:flex;gap:12px;padding:14px 0;border-bottom:.5px solid var(--bd-tertiary)}
+  .citem:last-child{border-bottom:0}
+  .citem .b{flex:1;min-width:0}
+  .citem .n{font-size:14px;font-weight:600;line-height:1.3}
+  .citem .s{font-size:11px;color:var(--tx-tertiary);font-family:var(--f-mono);margin-top:2px}
+  .citem .r{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+  .citem .v{font-family:var(--f-serif);font-size:15px}
+  .sfoot{flex:0 0 auto;padding:16px 20px 34px;border-top:.5px solid var(--bd-tertiary)}
+  .trow{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;margin-bottom:8px;color:var(--tx-secondary)}
+  .trow .v{font-family:var(--f-mono);font-size:13px}
+  .trow.free .v{color:var(--tx-success)}
+  .grand{display:flex;justify-content:space-between;align-items:baseline;padding-top:12px;border-top:.5px solid var(--bd-tertiary)}
+  .grand .l{font-size:15px;font-weight:600}
+  .grand .v{font-family:var(--f-serif);font-size:26px;letter-spacing:-.01em}
+  .grand .v .cents{font-size:16px}
+  .empty{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+    padding:48px 24px;color:var(--tx-tertiary);text-align:center;
+  }
+  .empty svg{width:28px;height:28px;opacity:.5}
+  .empty p{margin:0;font-size:13px;line-height:1.5;max-width:22ch}
+
+  /* toast */
+  .toast{
+    position:absolute;left:50%;transform:translateX(-50%);bottom:120px;z-index:12;
+    background:#141413;color:#fff;font-size:13px;padding:9px 14px;border-radius:var(--r-md);
+    opacity:0;transition:opacity .2s ease;pointer-events:none;max-width:80%;text-align:center;
+  }
+  .phone[data-theme="dark"] .toast{background:#faf9f5;color:#141413}
+  .toast.show{opacity:1}
+
+  .note{width:402px;max-width:100%;font-size:12px;line-height:1.6;color:#5c5b57}
+</style>
+</head>
+<body>
+
+<div class="pagebar">
+  <h1>Televendas — mobile</h1>
+  <button class="themebtn" id="themeBtn">Tema escuro</button>
+</div>
+
+<div class="phone" id="phone">
+  <div class="statusbar">
+    <span class="time">9:41</span>
+    <span class="levels" id="levels"></span>
+  </div>
+
+  <div class="navbar">
+    <button class="navbtn" id="backBtn" aria-label="Voltar"></button>
+    <div class="navttl">
+      <div class="t">Novo pedido</div>
+      <div class="s">#PV-24817</div>
+    </div>
+    <span class="callpill"><span class="pip"></span><span class="t" id="timer">02:12</span></span>
+  </div>
+
+  <div class="steps" id="steps"></div>
+  <div class="scroll" id="scroll"></div>
+  <div class="bottombar" id="bottombar"></div>
+
+  <div class="scrim" id="scrim"></div>
+  <div class="sheet" id="sheet"></div>
+  <div class="toast" id="toast"></div>
+</div>
+
+<p class="note">
+  Protótipo funcional. Toque no total para abrir o carrinho; a barra inferior avança o fluxo.
+  Medidas iOS do arquivo Figma (402×874, nav bar 54px, botões de 44px) e os tokens de cor em
+  light e dark.
+</p>
+
+<script>
+/* ============================ ícones ============================ */
+const I = {
+  back:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>',
+  close:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>',
+  search:'<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="9" cy="9" r="5.2"/><line x1="13" y1="13" x2="16.5" y2="16.5"/></svg>',
+  box:'<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M10 2.8 17 6.4v7.2L10 17.2 3 13.6V6.4l7-3.6Z"/><path d="M3 6.4 10 10l7-3.6M10 10v7.2"/></svg>',
+  cart:'<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><path d="M2.5 3h1.8l1.9 9.2a1.5 1.5 0 0 0 1.5 1.2h6.6a1.5 1.5 0 0 0 1.5-1.2L17 6H5"/><circle cx="8" cy="16.5" r="1"/><circle cx="14.5" cy="16.5" r="1"/></svg>',
+  plus:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><line x1="8" y1="3.5" x2="8" y2="12.5"/><line x1="3.5" y1="8" x2="12.5" y2="8"/></svg>',
+  minus:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><line x1="3.5" y1="8" x2="12.5" y2="8"/></svg>',
+  arrowR:'<svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 9h10"/><path d="M9.5 5 13.5 9l-4 4"/></svg>',
+  check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 10 17.5 19 7"/></svg>',
+  send:'<svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15.5 2.5 8 10"/><path d="M15.5 2.5 10.6 16 8 10 2 7.4 15.5 2.5Z"/></svg>',
+  copy:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><rect x="6" y="6" width="7.5" height="7.5" rx="1.8"/><path d="M10.5 6V4.2A1.7 1.7 0 0 0 8.8 2.5H4.2A1.7 1.7 0 0 0 2.5 4.2v4.6A1.7 1.7 0 0 0 4.2 10.5H6"/></svg>',
+  trash:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4.5h10"/><path d="M6.5 4.5V3.2h3v1.3"/><path d="M4.3 4.5 5 13a1 1 0 0 0 1 .9h4a1 1 0 0 0 1-.9l.7-8.5"/></svg>',
+  cell:'<svg width="19" height="12" viewBox="0 0 19 12" fill="currentColor"><rect y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" width="3" height="12" rx="1"/></svg>',
+  wifi:'<svg width="17" height="12" viewBox="0 0 17 12" fill="currentColor"><path d="M8.5 11.6 6.2 8.9a3.6 3.6 0 0 1 4.6 0l-2.3 2.7Z"/><path d="M8.5 4.2c2 0 3.9.7 5.3 2l1.4-1.7A10.3 10.3 0 0 0 8.5 2C6 2 3.7 2.9 1.8 4.5L3.2 6.2a8 8 0 0 1 5.3-2Z"/><path d="M8.5 7.2c1.2 0 2.3.4 3.2 1.2l1.4-1.7a7 7 0 0 0-9.2 0l1.4 1.7a4.8 4.8 0 0 1 3.2-1.2Z"/></svg>',
+  batt:'<svg width="27" height="13" viewBox="0 0 27 13" fill="none"><rect x=".5" y=".5" width="22" height="12" rx="3.8" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2.5" fill="currentColor"/><path d="M24.5 4.5v4a2.1 2.1 0 0 0 0-4Z" fill="currentColor" opacity=".5"/></svg>'
+};
+document.getElementById('levels').innerHTML = I.cell + I.wifi + I.batt;
+document.getElementById('backBtn').innerHTML = I.back;
+
+/* ============================ dados ============================ */
+const CUSTOMERS = [
+  {id:1,nome:'Mercearia São Jorge',doc:'12.345.678/0001-90',tel:'(11) 98812-4477',cidade:'São Paulo · SP',ult:'12/07',tag:'Recorrente',tagType:'success',ticket:842.30},
+  {id:2,nome:'Padaria Estrela do Norte',doc:'23.456.789/0001-04',tel:'(11) 97744-1290',cidade:'Guarulhos · SP',ult:'03/07',tag:'Recorrente',tagType:'success',ticket:1264.00},
+  {id:3,nome:'Bar do Tião',doc:'34.567.890/0001-18',tel:'(11) 96633-8821',cidade:'Osasco · SP',ult:'28/05',tag:'Inativo 60d',tagType:'warning',ticket:497.80},
+  {id:4,nome:'Restaurante Sabor Caseiro',doc:'45.678.901/0001-22',tel:'(11) 95522-7010',cidade:'Barueri · SP',ult:'19/07',tag:'Recorrente',tagType:'success',ticket:2130.50},
+  {id:5,nome:'Empório Vila Nova',doc:'56.789.012/0001-36',tel:'(11) 94411-5533',cidade:'São Paulo · SP',ult:'—',tag:'1ª compra',tagType:'info',ticket:0}
+];
+const PRODUCTS = [
+  {sku:'100234',nome:'Água Mineral 500ml',emb:'Caixa c/ 12',cat:'Águas',preco:24.90,estoque:340},
+  {sku:'100240',nome:'Água com Gás 500ml',emb:'Caixa c/ 12',cat:'Águas',preco:28.80,estoque:180},
+  {sku:'100871',nome:'Refrigerante Cola 2L',emb:'Fardo c/ 6',cat:'Refrigerantes',preco:47.40,estoque:96},
+  {sku:'100455',nome:'Suco de Uva Integral 1L',emb:'Caixa c/ 6',cat:'Sucos',preco:71.40,estoque:54},
+  {sku:'101120',nome:'Cerveja Pilsen 350ml',emb:'Caixa c/ 12',cat:'Cervejas',preco:38.90,estoque:212},
+  {sku:'102003',nome:'Energético 250ml',emb:'Bandeja c/ 6',cat:'Energéticos',preco:43.20,estoque:8},
+  {sku:'103311',nome:'Café Torrado e Moído 500g',emb:'Fardo c/ 10',cat:'Mercearia',preco:129.00,estoque:73},
+  {sku:'104002',nome:'Óleo de Soja 900ml',emb:'Caixa c/ 20',cat:'Mercearia',preco:118.00,estoque:41}
+];
+const CATS = ['Todos', ...new Set(PRODUCTS.map(p => p.cat))];
+const SHIPPING = [
+  {id:'retirada',t:'Retirada no CD',d:'Hoje até 18h · Guarulhos',v:0},
+  {id:'padrao',t:'Entrega padrão',d:'2 a 3 dias úteis',v:34.90},
+  {id:'expressa',t:'Entrega expressa',d:'Amanhã até 12h',v:79.90}
+];
+const PAYMENTS = [
+  {id:'pix',t:'Pix',d:'Aprovação imediata · sem taxa'},
+  {id:'cartao',t:'Cartão de crédito',d:'Em até 6x sem juros'},
+  {id:'boleto',t:'Boleto bancário',d:'Vence em 3 dias úteis'}
+];
+const CHANNELS = [
+  {id:'whats',t:'WhatsApp',d:'(11) 98812-4477'},
+  {id:'sms',t:'SMS',d:'(11) 98812-4477'},
+  {id:'email',t:'E-mail',d:'compras@saojorge.com.br'}
+];
+
+/* ============================ estado ============================ */
+const S = {
+  step:1, customer:null, cart:{}, qC:'', qP:'', cat:'Todos',
+  address:{cep:'07032-050',rua:'Av. Tiradentes',num:'1420',comp:'Galpão 3',bairro:'Jd. Bela Vista',cidade:'Guarulhos',uf:'SP'},
+  shipping:'padrao', payment:'pix', channel:'whats', sent:false, sheet:false
+};
+const BRL = v => v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const money = v => { const [i,c] = BRL(v).split(','); return `${i}<span class="cents">,${c}</span>`; };
+const prod = sku => PRODUCTS.find(p => p.sku === sku);
+const entries = () => Object.entries(S.cart).filter(([,q]) => q > 0);
+const count = () => entries().reduce((s,[,q]) => s + q, 0);
+const sub = () => entries().reduce((s,[k,q]) => s + prod(k).preco * q, 0);
+const ship = () => { const s = SHIPPING.find(x => x.id === S.shipping); return (S.shipping === 'padrao' && sub() >= 800) ? 0 : s.v; };
+const disc = () => sub() >= 1500 ? sub() * 0.05 : 0;
+const total = () => sub() + ship() - disc();
+const initials = n => n.split(' ').filter(w => w.length > 2).slice(0,2).map(w => w[0]).join('').toUpperCase();
+
+const phone = document.getElementById('phone');
+let tTimer;
+function toast(m){
+  const t = document.getElementById('toast');
+  t.textContent = m; t.classList.add('show');
+  clearTimeout(tTimer); tTimer = setTimeout(() => t.classList.remove('show'), 1700);
+}
+
+const STEPS = ['Cliente','Produtos','Entrega','Pagamento'];
+const canGo = n => n === 1 ? true : n === 2 ? !!S.customer : !!S.customer && count() > 0;
+
+/* ============================ views ============================ */
+function vCustomer(){
+  const q = S.qC.toLowerCase();
+  const list = CUSTOMERS.filter(c => !q || c.nome.toLowerCase().includes(q) || c.doc.includes(q) || c.tel.includes(q));
+  if (S.customer) {
+    const c = S.customer;
+    return `
+      <h2 class="sec">Cliente</h2>
+      <p class="sub">Confirme os dados durante a chamada.</p>
+      <div class="selected">
+        <div class="top">
+          <div class="ico">${initials(c.nome)}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:16px;font-weight:600;line-height:1.25">${c.nome}</div>
+            <div style="margin-top:5px"><span class="tag ${c.tagType}">${c.tag}</span></div>
+          </div>
+        </div>
+        <div class="grid">
+          <div class="kv"><div class="k">CNPJ</div><div class="v mono">${c.doc}</div></div>
+          <div class="kv"><div class="k">Telefone</div><div class="v mono">${c.tel}</div></div>
+          <div class="kv"><div class="k">Cidade</div><div class="v">${c.cidade}</div></div>
+          <div class="kv"><div class="k">Última compra</div><div class="v">${c.ult}</div></div>
+          <div class="kv"><div class="k">Ticket médio</div><div class="v mono">${c.ticket ? BRL(c.ticket) : '—'}</div></div>
+        </div>
+        <button class="btn secondary sm" id="trocar" style="margin-top:14px;width:100%">Trocar cliente</button>
+      </div>`;
+  }
+  return `
+    <h2 class="sec">Cliente</h2>
+    <p class="sub">Busque por nome, CNPJ ou telefone.</p>
+    <div class="search">${I.search}
+      <input class="field" id="qC" placeholder="Nome, CNPJ ou telefone…" value="${S.qC}" autocomplete="off">
+    </div>
+    <div class="list">
+      ${list.map(c => `
+        <button class="card" data-cust="${c.id}">
+          <span class="ico">${initials(c.nome)}</span>
+          <span class="b">
+            <span class="n">${c.nome}</span>
+            <span class="m"><span class="mono">${c.tel}</span> · ${c.cidade}</span>
+            <span class="m" style="margin-top:5px;display:block"><span class="tag ${c.tagType}">${c.tag}</span></span>
+          </span>
+        </button>`).join('') || '<p class="sub">Nenhum cliente encontrado.</p>'}
+    </div>`;
+}
+
+function vProducts(){
+  const q = S.qP.toLowerCase();
+  const list = PRODUCTS.filter(p => (S.cat === 'Todos' || p.cat === S.cat) && (!q || p.nome.toLowerCase().includes(q) || p.sku.includes(q)));
+  return `
+    <h2 class="sec">Produtos</h2>
+    <p class="sub">Pedido para ${S.customer.nome}.</p>
+    <div class="search">${I.search}
+      <input class="field" id="qP" placeholder="Nome ou SKU…" value="${S.qP}" autocomplete="off">
+    </div>
+    <div class="chiprow">
+      ${CATS.map(c => `<button class="chip" data-cat="${c}" aria-pressed="${S.cat === c}">${c}</button>`).join('')}
+    </div>
+    <div class="list">
+      ${list.map(p => {
+        const n = S.cart[p.sku] || 0;
+        return `
+        <div class="card" style="cursor:default;align-items:flex-start">
+          <span class="ico">${I.box}</span>
+          <span class="b">
+            <span class="n">${p.nome}</span>
+            <span class="m"><span class="mono">${p.sku}</span> · ${p.emb}${p.estoque <= 10 ? ' · <span class="tag warning">Estoque baixo</span>' : ''}</span>
+            <span style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:10px">
+              <span class="price">${money(p.preco)}</span>
+              ${n ? `<span class="qty">
+                       <button data-dec="${p.sku}" aria-label="Diminuir">${I.minus}</button>
+                       <span class="n">${n}</span>
+                       <button data-inc="${p.sku}" aria-label="Aumentar">${I.plus}</button>
+                     </span>`
+                  : `<button class="btn secondary sm" data-add="${p.sku}">${I.plus} Adicionar</button>`}
+            </span>
+          </span>
+        </div>`;
+      }).join('') || '<p class="sub">Nenhum produto encontrado.</p>'}
+    </div>`;
+}
+
+function vAddress(){
+  const a = S.address;
+  const falta = 800 - sub();
+  return `
+    <h2 class="sec">Entrega</h2>
+    <p class="sub">Confirme o endereço com o cliente.</p>
+    <div class="form">
+      <div class="c5"><label class="lbl" for="cep">CEP</label><input class="field" id="cep" value="${a.cep}"></div>
+      <div class="c7"><label class="lbl" for="num">Número</label><input class="field" id="num" value="${a.num}"></div>
+      <div class="c12"><label class="lbl" for="rua">Logradouro</label><input class="field" id="rua" value="${a.rua}"></div>
+      <div class="c12"><label class="lbl" for="comp">Complemento</label><input class="field" id="comp" value="${a.comp}"></div>
+      <div class="c12"><label class="lbl" for="bairro">Bairro</label><input class="field" id="bairro" value="${a.bairro}"></div>
+      <div class="c8"><label class="lbl" for="cidade">Cidade</label><input class="field" id="cidade" value="${a.cidade}"></div>
+      <div class="c4"><label class="lbl" for="uf">UF</label><input class="field" id="uf" value="${a.uf}"></div>
+    </div>
+    <h2 class="sec" style="margin-top:28px">Modalidade</h2>
+    <p class="sub">${falta <= 0 ? 'Frete padrão grátis — pedido acima de R$ 800,00.' : `Faltam ${BRL(falta)} para frete padrão grátis.`}</p>
+    <div class="list">
+      ${SHIPPING.map(s => {
+        const free = (s.id === 'padrao' && sub() >= 800) || s.v === 0;
+        return `
+        <label class="opt">
+          <input type="radio" name="ship" value="${s.id}" ${S.shipping === s.id ? 'checked' : ''}>
+          <span class="b"><span class="t">${s.t}</span><span class="d">${s.d}</span></span>
+          ${free ? '<span style="font-size:13px;color:var(--tx-success);font-weight:600">Grátis</span>'
+                 : `<span class="price">${money(s.v)}</span>`}
+        </label>`;
+      }).join('')}
+    </div>`;
+}
+
+function vPayment(){
+  if (S.sent) {
+    const ch = CHANNELS.find(c => c.id === S.channel);
+    return `
+      <div class="success">
+        <div class="mark">${I.check}</div>
+        <h2>Link enviado<br>por ${ch.t}</h2>
+        <p>O cliente recebeu o resumo do pedido <strong>#PV-24817</strong> em ${ch.d} e pode pagar pelo próprio celular.</p>
+      </div>
+      <div class="summary">
+        <div class="trow"><span>Cliente</span><span>${S.customer.nome}</span></div>
+        <div class="trow"><span>Itens</span><span class="v">${count()}</span></div>
+        <div class="trow"><span>${SHIPPING.find(s => s.id === S.shipping).t}</span><span class="v">${ship() ? BRL(ship()) : 'Grátis'}</span></div>
+        <div class="trow"><span>Pagamento</span><span>${PAYMENTS.find(p => p.id === S.payment).t}</span></div>
+        <div class="grand"><span class="l">Total</span><span class="v">${money(total())}</span></div>
+      </div>
+      <button class="btn secondary block" id="reenviar" style="margin-top:16px">Reenviar link</button>`;
+  }
+  return `
+    <h2 class="sec">Pagamento</h2>
+    <p class="sub">Forma de pagamento.</p>
+    <div class="list">
+      ${PAYMENTS.map(p => `
+        <label class="opt">
+          <input type="radio" name="pay" value="${p.id}" ${S.payment === p.id ? 'checked' : ''}>
+          <span class="b"><span class="t">${p.t}</span><span class="d">${p.d}</span></span>
+        </label>`).join('')}
+    </div>
+    <h2 class="sec" style="margin-top:28px">Enviar link para</h2>
+    <p class="sub">O cliente paga sem sair da conversa.</p>
+    <div class="list">
+      ${CHANNELS.map(c => `
+        <label class="opt">
+          <input type="radio" name="ch" value="${c.id}" ${S.channel === c.id ? 'checked' : ''}>
+          <span class="b"><span class="t">${c.t}</span><span class="d">${c.d}</span></span>
+        </label>`).join('')}
+    </div>
+    <div class="summary">
+      <div style="font-size:14px;font-weight:600">Resumo que o cliente recebe</div>
+      <div style="font-size:12px;color:var(--tx-tertiary);margin-top:4px">
+        ${count()} ${count() === 1 ? 'item' : 'itens'} · ${SHIPPING.find(s => s.id === S.shipping).t} · ${PAYMENTS.find(p => p.id === S.payment).t}
+      </div>
+      <div class="linkrow">
+        <code>pedidos.distribuidora.com.br/p/PV-24817</code>
+        <button class="btn secondary sm" id="copyLink" style="padding:0 10px">${I.copy}</button>
+      </div>
+    </div>`;
+}
+
+/* ============================ chrome ============================ */
+function renderSteps(){
+  document.getElementById('steps').innerHTML = STEPS.map((s,i) => {
+    const n = i + 1;
+    return `<button class="stp ${S.step > n && canGo(n) ? 'done' : ''}" ${S.step === n ? 'aria-current="true"' : ''}
+              ${canGo(n) ? '' : 'disabled'} data-step="${n}">
+              <span class="bar"></span><span class="lb">${s}</span>
+            </button>`;
+  }).join('');
+  document.querySelectorAll('.stp').forEach(b => b.addEventListener('click', () => { S.step = +b.dataset.step; render(); }));
+}
+
+function renderBottom(){
+  const b = document.getElementById('bottombar');
+  if (S.sent) {
+    b.innerHTML = `<button class="btn primary block" id="novo">Novo pedido</button>`;
+    b.querySelector('#novo').addEventListener('click', () => {
+      Object.assign(S, {step:1, customer:null, cart:{}, sent:false, qC:'', qP:'', cat:'Todos', sheet:false});
+      render();
+    });
+    return;
+  }
+  const cta =
+    S.step === 1 ? {label:'Escolher produtos', on:() => go(2), ok:!!S.customer, cls:'primary'} :
+    S.step === 2 ? {label:'Ir para entrega',   on:() => go(3), ok:count() > 0,  cls:'primary'} :
+    S.step === 3 ? {label:'Ir para pagamento', on:() => go(4), ok:count() > 0,  cls:'primary'} :
+                   {label:'Enviar para pagamento', on:send, ok:count() > 0, cls:'brand'};
+
+  b.innerHTML = `
+    <button class="cartbtn" id="openCart">
+      <span class="c">${I.cart} ${count()} ${count() === 1 ? 'item' : 'itens'}</span>
+      <span class="v">${money(total())}</span>
+    </button>
+    <button class="btn ${cta.cls}" id="cta" ${cta.ok ? '' : 'disabled'}>
+      ${cta.cls === 'brand' ? I.send : ''} ${cta.label} ${cta.cls === 'brand' ? '' : I.arrowR}
+    </button>`;
+  b.querySelector('#openCart').addEventListener('click', () => { S.sheet = true; syncSheet(); });
+  b.querySelector('#cta').addEventListener('click', cta.on);
+}
+
+function renderSheet(){
+  const list = entries();
+  document.getElementById('sheet').innerHTML = `
+    <div class="handle"><i></i></div>
+    <div class="shead">
+      <h3>Carrinho</h3>
+      <button class="btn secondary sm" id="closeSheet" style="padding:0 10px;height:32px">${I.close}</button>
+    </div>
+    ${list.length ? `
+      <div class="slist">
+        ${list.map(([sku,q]) => {
+          const p = prod(sku);
+          return `
+          <div class="citem">
+            <div class="b">
+              <div class="n">${p.nome}</div>
+              <div class="s">${p.sku} · ${p.emb}</div>
+              <div class="qty" style="margin-top:10px;width:max-content">
+                <button data-dec="${sku}" aria-label="Diminuir">${I.minus}</button>
+                <span class="n">${q}</span>
+                <button data-inc="${sku}" aria-label="Aumentar">${I.plus}</button>
+              </div>
+            </div>
+            <div class="r">
+              <span class="v">${BRL(p.preco * q)}</span>
+              <button class="btn secondary sm" data-del="${sku}" style="padding:0 9px">${I.trash}</button>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>` : `<div class="empty">${I.cart}<p>O carrinho está vazio. Adicione produtos no passo 2.</p></div>`}
+    <div class="sfoot">
+      <div class="trow"><span>Subtotal</span><span class="v">${BRL(sub())}</span></div>
+      <div class="trow ${ship() === 0 ? 'free' : ''}"><span>${SHIPPING.find(s => s.id === S.shipping).t}</span><span class="v">${ship() ? BRL(ship()) : 'Grátis'}</span></div>
+      ${disc() ? `<div class="trow free"><span>Desconto 5%</span><span class="v">−${BRL(disc())}</span></div>` : ''}
+      <div class="grand"><span class="l">Total</span><span class="v">${money(total())}</span></div>
+      ${list.length ? `<button class="btn secondary block sm" id="clear" style="margin-top:14px">Limpar carrinho</button>` : ''}
+    </div>`;
+
+  document.getElementById('closeSheet').addEventListener('click', () => { S.sheet = false; syncSheet(); });
+  document.getElementById('clear')?.addEventListener('click', () => { S.cart = {}; toast('Carrinho limpo'); render(); });
+  bindQty(document.getElementById('sheet'));
+}
+
+function syncSheet(){ phone.classList.toggle('sheet-open', S.sheet); }
+
+/* ============================ ações ============================ */
+function add(sku, n = 1){
+  S.cart[sku] = Math.max(0, (S.cart[sku] || 0) + n);
+  if (!S.cart[sku]) delete S.cart[sku];
+  render();
+}
+function go(n){ if (canGo(n)) { S.step = n; render(); } }
+function send(){ S.sent = true; S.step = 4; S.sheet = false; render(); toast('Link de pagamento enviado'); }
+
+function bindQty(root){
+  root.querySelectorAll('[data-inc]').forEach(b => b.addEventListener('click', () => add(b.dataset.inc, 1)));
+  root.querySelectorAll('[data-dec]').forEach(b => b.addEventListener('click', () => add(b.dataset.dec, -1)));
+  root.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', () => { delete S.cart[b.dataset.del]; render(); }));
+}
+
+function keepFocus(id, fn){
+  const f = document.getElementById(id);
+  if (!f) return;
+  f.addEventListener('input', e => {
+    fn(e.target.value);
+    const pos = e.target.selectionStart;
+    render();
+    const n = document.getElementById(id);
+    if (n) { n.focus(); n.setSelectionRange(pos, pos); }
+  });
+}
+
+function bind(){
+  const sc = document.getElementById('scroll');
+
+  keepFocus('qC', v => S.qC = v);
+  keepFocus('qP', v => S.qP = v);
+
+  sc.querySelectorAll('[data-cust]').forEach(b => b.addEventListener('click', () => {
+    S.customer = CUSTOMERS.find(c => c.id === +b.dataset.cust);
+    toast(`Cliente: ${S.customer.nome}`);
+    render();
+  }));
+  sc.querySelector('#trocar')?.addEventListener('click', () => { S.customer = null; S.qC = ''; render(); });
+  sc.querySelectorAll('[data-cat]').forEach(b => b.addEventListener('click', () => { S.cat = b.dataset.cat; render(); }));
+  sc.querySelectorAll('[data-add]').forEach(b => b.addEventListener('click', () => {
+    add(b.dataset.add); toast(`${prod(b.dataset.add).nome} adicionado`);
+  }));
+  bindQty(sc);
+
+  sc.querySelectorAll('input[name="ship"]').forEach(r => r.addEventListener('change', () => { S.shipping = r.value; render(); }));
+  sc.querySelectorAll('input[name="pay"]').forEach(r => r.addEventListener('change', () => { S.payment = r.value; render(); }));
+  sc.querySelectorAll('input[name="ch"]').forEach(r => r.addEventListener('change', () => { S.channel = r.value; render(); }));
+  Object.keys(S.address).forEach(k => sc.querySelector('#' + k)?.addEventListener('input', e => { S.address[k] = e.target.value; }));
+
+  sc.querySelector('#copyLink')?.addEventListener('click', () => {
+    navigator.clipboard?.writeText('https://pedidos.distribuidora.com.br/p/PV-24817').catch(() => {});
+    toast('Link copiado');
+  });
+  sc.querySelector('#reenviar')?.addEventListener('click', () => toast('Link reenviado'));
+}
+
+/* ============================ render ============================ */
+function render(){
+  renderSteps();
+  document.getElementById('scroll').innerHTML = ({1:vCustomer,2:vProducts,3:vAddress,4:vPayment})[S.step]();
+  document.getElementById('scroll').scrollTop = 0;
+  renderBottom();
+  renderSheet();
+  syncSheet();
+  bind();
+  const back = document.getElementById('backBtn');
+  back.disabled = S.step === 1 || S.sent;
+}
+
+document.getElementById('backBtn').addEventListener('click', () => { if (S.step > 1) { S.step--; render(); } });
+document.getElementById('scrim').addEventListener('click', () => { S.sheet = false; syncSheet(); });
+document.getElementById('themeBtn').addEventListener('click', () => {
+  const dark = phone.dataset.theme === 'dark';
+  phone.dataset.theme = dark ? '' : 'dark';
+  document.getElementById('themeBtn').textContent = dark ? 'Tema escuro' : 'Tema claro';
+});
+
+let secs = 132;
+setInterval(() => {
+  secs++;
+  document.getElementById('timer').textContent =
+    `${String(Math.floor(secs/60)).padStart(2,'0')}:${String(secs%60).padStart(2,'0')}`;
+}, 1000);
+
+render();
+</script>
+</body>
+</html>
