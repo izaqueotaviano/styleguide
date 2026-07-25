@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Fullscreen — Claude app (recriação)</title>
+<style>
+  :root{
+    --text-primary:#141413;
+    --muted-500:#7b7974;
+    --bg-100:#f9f9f7;
+    --bg-100b:#faf9f5;
+    --bg-000:#ffffff;
+    --border-200:rgba(30,30,29,0.3);
+    --border-secondary:rgba(31,30,29,0.3);
+    --border-300:rgba(31,30,29,0.15);
+    --brand:#c6613f;
+    --brand-hover:#b5573a;
+    --avatar:#c46686;
+    --radius-md:8px;
+    --radius-lg:10px;
+    --radius-2xl:16px;
+    --font-sans:'Styrene B',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;font-family:var(--font-sans);color:var(--text-primary);
+    background:#eceae4;display:flex;flex-direction:column;align-items:center;gap:16px;
+    padding:32px 16px;-webkit-font-smoothing:antialiased;
+  }
+  .frame-label{width:min(1180px,96vw);font-weight:600;font-size:20px;letter-spacing:-.01em}
+
+  .window{
+    width:min(1180px,96vw);height:min(820px,86vh);background:var(--bg-100);
+    border:.5px solid var(--border-200);border-radius:var(--radius-2xl);
+    overflow:hidden;display:flex;box-shadow:0 12px 40px rgba(0,0,0,.06);
+  }
+
+  .sidebar{
+    background:var(--bg-100b);border-right:.5px solid var(--border-secondary);
+    display:flex;flex-direction:column;justify-content:space-between;
+    padding:8px 8px 12px;flex:0 0 52px;width:52px;
+  }
+  .sidebar-top{display:flex;flex-direction:column;align-items:stretch;gap:2px}
+  .nav-btn{
+    display:flex;align-items:center;justify-content:center;height:36px;border:0;
+    background:transparent;cursor:pointer;border-radius:var(--radius-md);color:var(--text-primary);
+  }
+  .nav-btn.toggle{height:52px}
+  .nav-btn:hover{background:rgba(31,30,29,.06)}
+  .nav-btn svg{width:20px;height:20px;color:#3d3d3a}
+  .avatar{width:28px;height:28px;border-radius:1000px;background:var(--avatar);display:grid;place-items:center;color:#fff;margin:4px}
+  .avatar svg{width:15px;height:15px}
+
+  .main{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;align-items:center;
+    padding:12px;position:relative;overflow:hidden}
+
+  .app-container{
+    width:100%;flex:1 1 auto;background:var(--bg-000);border:.5px solid var(--border-secondary);
+    border-radius:var(--radius-lg);overflow:hidden;display:flex;flex-direction:column;min-height:0;
+  }
+  .app-header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:16px 17px;border-bottom:.5px solid var(--border-300);flex:0 0 auto;
+  }
+  .app-name{display:flex;align-items:center;gap:8px}
+  .app-glyph{
+    width:20px;height:20px;border:1px solid var(--border-secondary);border-radius:5px;
+    display:grid;place-items:center;font-size:11px;font-weight:700;line-height:1;
+  }
+  .app-name .t{font-size:14px}
+  .icon-btn{
+    width:32px;height:32px;display:grid;place-items:center;border-radius:var(--radius-md);
+    border:0;background:transparent;cursor:pointer;color:#3d3d3a;
+  }
+  .icon-btn:hover{background:rgba(31,30,29,.06)}
+
+  .app-body{flex:1 1 auto;overflow-y:auto;display:flex;flex-direction:column;gap:24px;padding:40px}
+  .skl-row{display:flex;gap:20px;align-items:center;opacity:.2}
+  .skl-dot{width:44px;height:44px;flex:0 0 44px;border-radius:1000px;background:#b7b6b1}
+  .skl-bar{flex:1 1 0;height:44px;border-radius:var(--radius-md);
+    background:linear-gradient(90deg,#dad9d4 0%,#e8e7e2 40%,#dad9d4 80%);
+    background-size:200% 100%;animation:shimmer 1.6s linear infinite}
+  @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+  .composer{
+    margin-top:24px;flex:0 0 auto;width:min(752px,100%);background:var(--bg-000);
+    border:.5px solid var(--border-200);border-radius:var(--radius-2xl);
+    box-shadow:0 2px 8px rgba(0,0,0,.05);display:flex;align-items:center;
+    justify-content:space-between;padding:12px;gap:12px;
+  }
+  .composer .left{display:flex;align-items:center;gap:6px;flex:1;min-width:0}
+  .composer input{
+    border:0;outline:0;background:transparent;font-family:inherit;font-size:16px;
+    color:var(--text-primary);width:100%;padding:4px;
+  }
+  .composer input::placeholder{color:var(--muted-500);opacity:.75}
+  .send{
+    width:32px;height:32px;border-radius:var(--radius-md);border:.5px solid var(--border-secondary);
+    background:var(--brand);color:#fff;display:grid;place-items:center;cursor:pointer;flex:0 0 auto;
+    box-shadow:0 1px 1px rgba(0,0,0,.05);
+  }
+  .send:hover{background:var(--brand-hover)}
+  .send:disabled{opacity:.45;cursor:default}
+</style>
+</head>
+<body>
+  <div class="frame-label">Fullscreen</div>
+
+  <div class="window">
+    <aside class="sidebar">
+      <div class="sidebar-top">
+        <button class="nav-btn toggle" title="Alternar barra lateral">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="14" height="12" rx="2.5"/><line x1="8" y1="4" x2="8" y2="16"/></svg>
+        </button>
+        <button class="nav-btn" title="Novo chat">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 15.5V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H8l-4 2.5Z"/><line x1="10" y1="6.5" x2="10" y2="10.5"/><line x1="8" y1="8.5" x2="12" y2="8.5"/></svg>
+        </button>
+        <button class="nav-btn" title="Chats">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3.5 12V6.5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H7l-3.5 2.2V12Z"/><path d="M8 13.2v.3a2 2 0 0 0 2 2h4l2.5 1.6V10a2 2 0 0 0-1.5-1.94"/></svg>
+        </button>
+        <button class="nav-btn" title="Projetos">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3.5 6.5A1.5 1.5 0 0 1 5 5h3l1.5 2H15a1.5 1.5 0 0 1 1.5 1.5v5A1.5 1.5 0 0 1 15 15H5a1.5 1.5 0 0 1-1.5-1.5v-7Z"/></svg>
+        </button>
+        <button class="nav-btn" title="Artifacts">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3.5" y="3.5" width="6" height="6" rx="1.5"/><rect x="10.5" y="3.5" width="6" height="6" rx="1.5"/><rect x="3.5" y="10.5" width="6" height="6" rx="1.5"/><rect x="10.5" y="10.5" width="6" height="6" rx="1.5"/></svg>
+        </button>
+        <button class="nav-btn" title="Code">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 6 4 10l3.5 4"/><path d="M12.5 6 16 10l-3.5 4"/></svg>
+        </button>
+      </div>
+      <span class="avatar"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 3.5 12 8.5 17 10.5 12 12.5 10 17.5 8 12.5 3 10.5 8 8.5Z"/></svg></span>
+    </aside>
+
+    <div class="main">
+      <div class="app-container">
+        <div class="app-header">
+          <div class="app-name">
+            <span class="app-glyph">A</span>
+            <span class="t">App</span>
+          </div>
+          <button class="icon-btn" id="closeBtn" title="Fechar">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><line x1="5" y1="5" x2="15" y2="15"/><line x1="15" y1="5" x2="5" y2="15"/></svg>
+          </button>
+        </div>
+        <div class="app-body" id="appBody">
+          <div class="skl-row"><span class="skl-dot"></span><span class="skl-bar"></span><span class="skl-bar"></span><span class="skl-bar"></span></div>
+          <div class="skl-row"><span class="skl-dot"></span><span class="skl-bar"></span><span class="skl-bar"></span><span class="skl-bar"></span></div>
+          <div class="skl-row"><span class="skl-dot"></span><span class="skl-bar"></span><span class="skl-bar"></span><span class="skl-bar"></span></div>
+          <div class="skl-row"><span class="skl-dot"></span><span class="skl-bar"></span><span class="skl-bar"></span><span class="skl-bar"></span></div>
+          <div class="skl-row"><span class="skl-dot"></span><span class="skl-bar"></span><span class="skl-bar"></span><span class="skl-bar"></span></div>
+        </div>
+      </div>
+
+      <form class="composer" id="composer">
+        <div class="left">
+          <button type="button" class="icon-btn" title="Anexar">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="10" y1="5" x2="10" y2="15"/><line x1="5" y1="10" x2="15" y2="10"/></svg>
+          </button>
+          <input id="input" placeholder="Ask App" />
+        </div>
+        <button type="submit" class="send" id="send" disabled title="Enviar">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="13" x2="8" y2="3.5"/><path d="M4 7 8 3l4 4"/></svg>
+        </button>
+      </form>
+    </div>
+  </div>
+
+<script>
+  const $ = s => document.querySelector(s);
+  const input = $('#input'), send = $('#send');
+  input.addEventListener('input', () => send.disabled = input.value.trim()==='');
+  $('#composer').addEventListener('submit', e => {
+    e.preventDefault();
+    if(!input.value.trim()) return;
+    input.value=''; send.disabled=true;
+  });
+  $('#closeBtn').addEventListener('click', () => {
+    const body = $('#appBody');
+    body.style.transition='opacity .25s ease';
+    body.style.opacity='0';
+    setTimeout(()=>{ body.style.opacity='1'; }, 400);
+  });
+</script>
+</body>
+</html>

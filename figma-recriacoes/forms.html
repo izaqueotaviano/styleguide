@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Forms — Controls (recriação)</title>
+<style>
+  :root{
+    --text-primary:#141413;
+    --text-tertiary:#73726c;
+    --text-500:#7b7974;
+    --bg-000:#ffffff;
+    --bg-primary:#ffffff;
+    --border-primary:rgba(31,30,29,0.4);
+    --border-secondary:rgba(31,30,29,0.3);
+    --bg-inverse:#141413;
+    --bg-danger:#b53333;
+    --ring-primary:rgba(20,20,19,0.7);
+    --ring-info:rgba(50,102,173,0.5);
+    --ring-danger:rgba(167,61,57,0.5);
+    --border-info:#4682d5;
+    --bg-tertiary:#faf9f5;
+    --radius-xs:4px;
+    --radius-sm:6px;
+    --radius-md:8px;
+    --font-sans:'Styrene B',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;padding:64px 24px 120px;background:#eceae4;
+    font-family:var(--font-sans);color:var(--text-primary);
+    display:flex;justify-content:center;
+  }
+  .sheet{
+    width:min(1400px,100%);background:var(--bg-000);
+    border:.5px solid var(--border-primary);border-radius:48px;
+    padding:64px clamp(24px,6vw,128px);
+  }
+  h1{font-size:clamp(40px,6vw,72px);font-weight:600;letter-spacing:-.02em;margin:0 0 56px}
+  .grid{display:flex;flex-wrap:wrap;gap:56px 72px;align-items:flex-start}
+  .col{display:flex;flex-direction:column;gap:16px;min-width:150px}
+  .col h2{font-size:20px;font-weight:600;margin:0 0 4px}
+  .rows{display:flex;flex-direction:column;gap:8px}
+  .pair{display:flex;gap:8px}
+  .note{font-size:11px;color:var(--text-500);max-width:220px;line-height:1.5}
+
+  /* ---- Button ---- */
+  .btn{
+    font-family:inherit;border:none;cursor:pointer;font-weight:600;
+    display:inline-flex;align-items:center;justify-content:center;
+    transition:box-shadow .12s ease, filter .12s ease;
+  }
+  .btn.default{background:var(--bg-inverse);color:#fff}
+  .btn.secondary{background:transparent;color:var(--text-primary);border:.5px solid var(--border-primary)}
+  .btn.danger{background:var(--bg-danger);color:#fff}
+  .btn.size-default{height:36px;padding:0 16px;border-radius:var(--radius-md);font-size:14px}
+  .btn.size-small{height:32px;padding:0 12px;border-radius:var(--radius-sm);font-size:12px}
+  .btn.default:hover:not(:disabled){filter:brightness(1.15)}
+  .btn.secondary:hover:not(:disabled){background:rgba(31,30,29,.05)}
+  .btn.danger:hover:not(:disabled){filter:brightness(1.1)}
+  .btn.default:focus-visible{box-shadow:0 0 0 2px var(--bg-primary),0 0 0 3.5px var(--ring-primary);outline:none}
+  .btn.secondary:focus-visible{box-shadow:0 0 0 2px var(--bg-primary),0 0 0 3.5px var(--ring-info);outline:none}
+  .btn.danger:focus-visible{box-shadow:0 0 0 2px var(--bg-primary),0 0 0 3.5px var(--ring-danger);outline:none}
+  .btn:disabled{opacity:.5;cursor:default}
+  .btn.danger:disabled{opacity:.6}
+
+  /* ---- Icon button ---- */
+  .icon-btn{
+    display:inline-flex;align-items:center;justify-content:center;cursor:pointer;
+    background:transparent;border:none;color:var(--text-primary);
+  }
+  .icon-btn.ghost.size-default{width:32px;height:32px;border-radius:var(--radius-md)}
+  .icon-btn.ghost.size-small{width:28px;height:28px;border-radius:var(--radius-sm)}
+  .icon-btn.secondary{border:.5px solid var(--border-primary)}
+  .icon-btn.secondary.size-default{width:32px;height:32px;border-radius:var(--radius-md)}
+  .icon-btn.secondary.size-small{width:28px;height:28px;border-radius:var(--radius-sm)}
+  .icon-btn:hover:not(:disabled){background:rgba(31,30,29,.06)}
+  .icon-btn:focus-visible{background:var(--bg-primary);box-shadow:0 0 0 2px var(--bg-primary),0 0 0 3.5px var(--ring-info);outline:none}
+  .icon-btn:disabled{opacity:.5;cursor:default}
+  .icon-btn svg{width:20px;height:20px}
+  .icon-btn.size-small svg{width:16px;height:16px}
+
+  /* ---- Toggle switch ---- */
+  .switch{appearance:none;-webkit-appearance:none;margin:0;position:relative;cursor:pointer;
+    background:var(--bg-tertiary);border:.5px solid var(--border-primary);border-radius:9999px;flex:0 0 auto;
+  }
+  .switch.size-default{width:36px;height:20px}
+  .switch.size-small{width:28px;height:16px}
+  .switch::after{content:'';position:absolute;top:2px;left:2px;background:#fff;border:.5px solid var(--border-primary);border-radius:9999px;transition:left .15s ease}
+  .switch.size-default::after{width:16px;height:16px}
+  .switch.size-small::after{width:12px;height:12px}
+  .switch:checked{background:var(--border-info);border-color:var(--border-info)}
+  .switch:checked::after{border-color:var(--border-info)}
+  .switch.size-default:checked::after{left:18px}
+  .switch.size-small:checked::after{left:14px}
+  .switch:disabled{opacity:.5;cursor:default}
+  .switch:focus-visible{outline:none;box-shadow:0 0 0 2px var(--bg-primary),0 0 0 3.5px var(--ring-info)}
+
+  /* ---- Radio ---- */
+  .radio{appearance:none;-webkit-appearance:none;margin:0;cursor:pointer;
+    border:.5px solid var(--border-primary);border-radius:9999px;background:#fff;
+    display:inline-flex;align-items:center;justify-content:center;padding:3px;
+  }
+  .radio.size-large{width:20px;height:20px}
+  .radio.size-small{width:16px;height:16px}
+  .radio:checked{border:1px solid var(--border-info)}
+  .radio:checked::after{content:'';display:block;width:100%;height:100%;border-radius:9999px;background:var(--border-info)}
+  .radio:disabled{opacity:.5;cursor:default}
+  .radio:focus-visible{outline:none;box-shadow:0 0 0 2px var(--bg-primary),0 0 0 3.5px var(--ring-info)}
+
+  /* ---- Checkbox ---- */
+  .checkbox{appearance:none;-webkit-appearance:none;margin:0;cursor:pointer;
+    border:.5px solid var(--border-secondary);background:#fff;position:relative;
+  }
+  .checkbox.size-large{width:20px;height:20px;border-radius:var(--radius-sm)}
+  .checkbox.size-small{width:16px;height:16px;border-radius:var(--radius-xs)}
+  .checkbox:checked{background:var(--border-info);border-color:var(--border-info)}
+  .checkbox:checked::after{
+    content:'';position:absolute;inset:0;
+    background:#fff;
+    -webkit-mask:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M5 10.5l3 3 7-7.5" fill="none" stroke="black" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>') center/70% no-repeat;
+    mask:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M5 10.5l3 3 7-7.5" fill="none" stroke="black" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>') center/70% no-repeat;
+  }
+  .checkbox:disabled{opacity:.5;cursor:default}
+  .checkbox:focus-visible{outline:none;box-shadow:0 0 0 2px var(--bg-primary),0 0 0 3.5px var(--ring-info)}
+
+  /* ---- Text input ---- */
+  .text-input{
+    font-family:inherit;background:#fff;border:1px solid var(--border-secondary);
+    border-radius:var(--radius-md);padding:0 12px;color:var(--text-primary);font-size:14px;
+    width:181px;
+  }
+  .text-input::placeholder{color:var(--text-tertiary)}
+  .text-input.size-default{height:32px}
+  .text-input.size-large{height:40px}
+  .text-input:hover:not(:disabled){border-color:var(--border-primary)}
+  .text-input:focus{outline:none;border-color:var(--border-primary);
+    box-shadow:0 0 0 2px var(--bg-primary),0 0 0 3.5px var(--ring-info)}
+  .text-input:disabled{opacity:.5;cursor:default}
+
+  /* ---- Text area ---- */
+  .textarea{
+    font-family:inherit;background:#fff;border:.5px solid var(--border-secondary);
+    border-radius:var(--radius-md);padding:16px;color:var(--text-primary);font-size:14px;
+    width:100%;max-width:393px;height:132px;resize:vertical;line-height:1.4;
+  }
+  .textarea::placeholder{color:var(--text-tertiary)}
+  .textarea:hover:not(:disabled){border-color:var(--border-primary)}
+  .textarea:focus{outline:none;border-color:var(--border-primary);
+    box-shadow:0 0 0 2px var(--bg-primary),0 0 0 3.5px var(--ring-info)}
+  .textarea:disabled{opacity:.5;cursor:default}
+
+  .hint{font-size:10px;color:var(--text-500);margin-top:-6px}
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>Controls</h1>
+  <div class="grid">
+
+    <!-- Button -->
+    <div class="col">
+      <h2>Button</h2>
+      <div class="rows">
+        <div class="pair"><button class="btn default size-default">Button</button><button class="btn default size-small">Button</button></div>
+        <div class="pair"><button class="btn secondary size-default">Button</button><button class="btn secondary size-small">Button</button></div>
+        <div class="pair"><button class="btn danger size-default">Button</button><button class="btn danger size-small">Button</button></div>
+        <div class="pair"><button class="btn default size-default" disabled>Button</button><button class="btn default size-small" disabled>Button</button></div>
+        <div class="pair"><button class="btn secondary size-default" disabled>Button</button><button class="btn secondary size-small" disabled>Button</button></div>
+        <div class="pair"><button class="btn danger size-default" disabled>Button</button><button class="btn danger size-small" disabled>Button</button></div>
+      </div>
+      <p class="note">Tab até o botão para ver o anel de foco (Focused).</p>
+    </div>
+
+    <!-- Icon button -->
+    <div class="col">
+      <h2>Icon button</h2>
+      <div class="rows">
+        <div class="pair">
+          <button class="icon-btn ghost size-default"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg></button>
+          <button class="icon-btn ghost size-small"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg></button>
+        </div>
+        <div class="pair">
+          <button class="icon-btn secondary size-default"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg></button>
+          <button class="icon-btn secondary size-small"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg></button>
+        </div>
+        <div class="pair">
+          <button class="icon-btn ghost size-default" disabled><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg></button>
+          <button class="icon-btn ghost size-small" disabled><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><line x1="10" y1="4" x2="10" y2="16"/><line x1="4" y1="10" x2="16" y2="10"/></svg></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Switch -->
+    <div class="col">
+      <h2>Switch</h2>
+      <div class="rows">
+        <div class="pair"><input type="checkbox" class="switch size-default"><input type="checkbox" class="switch size-small"></div>
+        <div class="pair"><input type="checkbox" class="switch size-default" checked><input type="checkbox" class="switch size-small" checked></div>
+        <div class="pair"><input type="checkbox" class="switch size-default" disabled><input type="checkbox" class="switch size-small" disabled></div>
+        <div class="pair"><input type="checkbox" class="switch size-default" checked disabled><input type="checkbox" class="switch size-small" checked disabled></div>
+      </div>
+    </div>
+
+    <!-- Radio -->
+    <div class="col">
+      <h2>Radio</h2>
+      <div class="rows">
+        <div class="pair"><input type="radio" name="r1" class="radio size-large"><input type="radio" name="r1s" class="radio size-small"></div>
+        <div class="pair"><input type="radio" name="r2" class="radio size-large" checked><input type="radio" name="r2s" class="radio size-small" checked></div>
+        <div class="pair"><input type="radio" name="r3" class="radio size-large" disabled><input type="radio" name="r3s" class="radio size-small" disabled></div>
+        <div class="pair"><input type="radio" name="r4" class="radio size-large" checked disabled><input type="radio" name="r4s" class="radio size-small" checked disabled></div>
+      </div>
+    </div>
+
+    <!-- Checkbox -->
+    <div class="col">
+      <h2>Checkbox</h2>
+      <div class="rows">
+        <div class="pair"><input type="checkbox" class="checkbox size-large"><input type="checkbox" class="checkbox size-small"></div>
+        <div class="pair"><input type="checkbox" class="checkbox size-large" checked><input type="checkbox" class="checkbox size-small" checked></div>
+        <div class="pair"><input type="checkbox" class="checkbox size-large" disabled><input type="checkbox" class="checkbox size-small" disabled></div>
+        <div class="pair"><input type="checkbox" class="checkbox size-large" checked disabled><input type="checkbox" class="checkbox size-small" checked disabled></div>
+      </div>
+    </div>
+
+    <!-- Text input -->
+    <div class="col">
+      <h2>Text input</h2>
+      <div class="rows">
+        <div class="pair"><input class="text-input size-default" placeholder="Placeholder"><input class="text-input size-large" placeholder="Placeholder"></div>
+        <div class="pair"><input class="text-input size-default" placeholder="Placeholder" value="Active"><input class="text-input size-large" placeholder="Placeholder" value="Active"></div>
+        <div class="pair"><input class="text-input size-default" placeholder="Placeholder" disabled><input class="text-input size-large" placeholder="Placeholder" disabled></div>
+      </div>
+      <p class="note">Clique para ver o estado Active/Focused real.</p>
+    </div>
+
+    <!-- Text area -->
+    <div class="col" style="min-width:280px">
+      <h2>Text area</h2>
+      <div class="rows" style="gap:16px">
+        <textarea class="textarea" placeholder="Placeholder" style="height:88px"></textarea>
+        <textarea class="textarea" placeholder="Placeholder" style="height:88px" disabled></textarea>
+      </div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

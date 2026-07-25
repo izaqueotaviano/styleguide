@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Border — design tokens (recriação)</title>
+<style>
+  :root{
+    /* Radius scale — valores confirmados pelo uso real nos componentes do arquivo */
+    --border-radius-xs:4px;
+    --border-radius-sm:6px;
+    --border-radius-md:8px;
+    --border-radius-lg:10px;
+    --border-radius-xl:12px;
+    --border-radius-full:9999px;
+
+    /* Width scale */
+    --border-width-regular:0.5px;
+
+    --text-primary:#141413;
+    --text-tertiary:#73726c;
+    --border-primary:rgba(31,30,29,0.4);
+    --swatch-fill:#d3e2f7;
+    --swatch-stroke:#8ab4e8;
+    --font-sans:'Styrene B',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,'Liberation Mono',monospace;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;padding:64px 24px 120px;background:#eceae4;
+    font-family:var(--font-sans);color:var(--text-primary);
+    display:flex;justify-content:center;
+  }
+  .sheet{
+    width:min(960px,100%);background:#fff;
+    border:var(--border-width-regular) solid var(--border-primary);
+    border-radius:48px;
+    padding:clamp(40px,8vw,128px);
+  }
+  h1{font-size:clamp(48px,9vw,96px);font-weight:600;letter-spacing:-.02em;margin:0 0 96px;line-height:1}
+  .cols{display:flex;flex-wrap:wrap;gap:64px 80px;align-items:flex-start}
+  .col{flex:1 1 320px;min-width:280px}
+  h2{font-size:32px;font-weight:500;letter-spacing:-.01em;margin:0 0 40px}
+
+  .token{display:flex;align-items:center;gap:20px;margin-bottom:36px}
+  .swatch{
+    width:64px;height:64px;flex:0 0 64px;
+    background:var(--swatch-fill);
+    border:1px solid var(--swatch-stroke);
+  }
+  .meta{display:flex;flex-direction:column;gap:4px}
+  .meta .name{font-size:15px;font-weight:600;line-height:1.3}
+  .meta .var{font-family:var(--font-mono);font-size:13px;color:var(--text-tertiary);line-height:1.3}
+  .meta .val{font-family:var(--font-mono);font-size:12px;color:var(--text-tertiary);opacity:.7}
+
+  /* Width demo — linha horizontal com a espessura do token */
+  .rule-wrap{width:180px;flex:0 0 180px;display:flex;align-items:center;height:64px}
+  .rule{width:100%;border-top:var(--border-width-regular) solid var(--swatch-stroke)}
+
+  .note{
+    margin-top:72px;padding:16px 20px;border-radius:12px;background:#f7f6f2;
+    border:.5px solid rgba(31,30,29,.15);font-size:13px;line-height:1.6;color:#4d4c48;
+  }
+  .note strong{color:var(--text-primary)}
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>Border</h1>
+
+  <div class="cols">
+    <!-- Radius -->
+    <div class="col">
+      <h2>Radius</h2>
+
+      <div class="token">
+        <span class="swatch" style="border-radius:var(--border-radius-xs)"></span>
+        <span class="meta">
+          <span class="name">XS</span>
+          <span class="var">border-radius-xs</span>
+          <span class="val">4px</span>
+        </span>
+      </div>
+
+      <div class="token">
+        <span class="swatch" style="border-radius:var(--border-radius-sm)"></span>
+        <span class="meta">
+          <span class="name">Small</span>
+          <span class="var">border-radius-sm</span>
+          <span class="val">6px</span>
+        </span>
+      </div>
+
+      <div class="token">
+        <span class="swatch" style="border-radius:var(--border-radius-md)"></span>
+        <span class="meta">
+          <span class="name">Medium</span>
+          <span class="var">border-radius-md</span>
+          <span class="val">8px</span>
+        </span>
+      </div>
+
+      <div class="token">
+        <span class="swatch" style="border-radius:var(--border-radius-lg)"></span>
+        <span class="meta">
+          <span class="name">Large</span>
+          <span class="var">border-radius-lg</span>
+          <span class="val">10px</span>
+        </span>
+      </div>
+
+      <div class="token">
+        <span class="swatch" style="border-radius:var(--border-radius-xl)"></span>
+        <span class="meta">
+          <span class="name">XL</span>
+          <span class="var">border-radius-xl</span>
+          <span class="val">12px</span>
+        </span>
+      </div>
+
+      <div class="token">
+        <span class="swatch" style="border-radius:var(--border-radius-full)"></span>
+        <span class="meta">
+          <span class="name">Full</span>
+          <span class="var">border-radius-full</span>
+          <span class="val">9999px</span>
+        </span>
+      </div>
+    </div>
+
+    <!-- Width -->
+    <div class="col">
+      <h2>Width</h2>
+
+      <div class="token">
+        <span class="rule-wrap"><span class="rule"></span></span>
+        <span class="meta">
+          <span class="name">Regular</span>
+          <span class="var">border-width-regular</span>
+          <span class="val">0.5px</span>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <p class="note">
+    <strong>Nota sobre os valores.</strong> Os px de cada token foram extraídos do uso real dos
+    componentes deste mesmo arquivo Figma (Button, Checkbox, App container, Chat input, Toggle,
+    e a borda desta folha). Não consegui reabrir a tabela de variáveis para reconferir a escala
+    <code>border-radius-*</code> nome a nome, porque a conta atingiu o limite mensal de chamadas
+    da API do Figma no plano Starter. Os nomes e a ordem dos tokens vêm da página original.
+  </p>
+</div>
+</body>
+</html>
