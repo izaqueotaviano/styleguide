@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Inline carousel — preenchido (recriação)</title>
+<style>
+  :root{
+    --brand:#c6613f;
+    --radius-md:8px; --radius-lg:10px; --radius-xl:12px; --radius-2xl:16px; --radius-sm:6px;
+    --font-sans:'Anthropic Sans','Styrene B',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    --font-serif:'Tiempos Text','Iowan Old Style',Georgia,'Times New Roman',serif;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;padding:40px 24px 96px;background:#eceae4;font-family:var(--font-sans);
+    color:#141413;-webkit-font-smoothing:antialiased;
+  }
+  h1{font-size:clamp(28px,4vw,44px);font-weight:600;letter-spacing:-.02em;margin:0 0 8px}
+  .lede{margin:0 0 24px;font-size:14px;line-height:1.6;color:#4d4c48;max-width:64ch}
+  .toolbar{display:flex;gap:8px;margin:0 0 32px}
+  .toolbar button{
+    font-family:inherit;font-size:14px;padding:8px 16px;border-radius:8px;cursor:pointer;
+    border:.5px solid rgba(31,30,29,.4);background:transparent;color:#141413;
+  }
+  .toolbar button[aria-pressed="true"]{background:#141413;color:#fff;border-color:#141413}
+
+  .frames{display:flex;flex-direction:column;gap:40px}
+  .frame-label{font-weight:600;font-size:16px;margin:0 0 12px}
+
+  /* ---------- Window ---------- */
+  .window{
+    width:min(1180px,100%);height:min(760px,84vh);border-radius:var(--radius-2xl);
+    overflow:hidden;display:flex;border:.5px solid;box-shadow:0 12px 40px rgba(0,0,0,.06);
+  }
+  .window.light{
+    --screen:#f9f9f7; --side:#faf9f5; --surface:#ffffff; --bubble:#f0efec;
+    --tx:#141413; --tx-muted:#7b7974; --tx-ghost:rgba(115,114,108,.5);
+    --line:rgba(31,30,29,.3); --line-soft:rgba(31,30,29,.15);
+    --hover:rgba(31,30,29,.06); --skel:#f0eee6; --card-sub:#3d3d3a; --card-meta:#73726c;
+    --save-bg:rgba(255,255,255,.9); --save-tx:#141413;
+    background:var(--screen);border-color:rgba(30,30,29,.3);color:var(--tx);
+  }
+  .window.dark{
+    --screen:#262624; --side:#1f1f1d; --surface:#30302e; --bubble:#3a3a37;
+    --tx:#faf9f5; --tx-muted:#9c9a92; --tx-ghost:rgba(156,154,146,.5);
+    --line:rgba(222,220,209,.3); --line-soft:rgba(222,220,209,.15);
+    --hover:rgba(255,255,255,.07); --skel:#3a3a37; --card-sub:#c2c0b6; --card-meta:#9c9a92;
+    --save-bg:rgba(20,20,19,.75); --save-tx:#faf9f5;
+    background:var(--screen);border-color:rgba(222,220,209,.2);color:var(--tx);
+  }
+
+  .sidebar{
+    background:var(--side);border-right:.5px solid var(--line);flex:0 0 52px;width:52px;
+    display:flex;flex-direction:column;justify-content:space-between;padding:8px 8px 12px;
+  }
+  .sidebar .top{display:flex;flex-direction:column;gap:2px}
+  .navbtn{
+    height:36px;border:0;background:transparent;cursor:pointer;border-radius:var(--radius-md);
+    display:grid;place-items:center;color:var(--tx);opacity:.85;
+  }
+  .navbtn.tall{height:52px}
+  .navbtn:hover{background:var(--hover);opacity:1}
+  .navbtn svg{width:20px;height:20px}
+  .avatar{
+    width:28px;height:28px;border-radius:1000px;background:#c46686;color:#fff;
+    display:grid;place-items:center;margin:4px;
+  }
+  .avatar svg{width:15px;height:15px}
+
+  .main{flex:1 1 auto;min-width:0;position:relative;display:flex;flex-direction:column;overflow:hidden}
+  .titlebar{
+    position:absolute;top:0;left:0;right:0;z-index:5;background:var(--screen);
+    display:flex;align-items:center;justify-content:space-between;padding:16px;
+  }
+  .chip{
+    display:flex;align-items:center;gap:6px;height:36px;padding:4px 4px 4px 8px;
+    border-radius:var(--radius-sm);background:transparent;border:0;cursor:pointer;
+    font-family:inherit;font-size:16px;color:var(--tx);
+  }
+  .chip:hover{background:var(--hover)}
+  .chip svg{width:20px;height:20px;opacity:.8}
+  .share{
+    min-width:75px;height:36px;padding:0 12px;border:.5px solid var(--line);
+    border-radius:var(--radius-md);background:transparent;cursor:pointer;
+    font-family:inherit;font-size:14px;color:var(--tx);
+  }
+  .share:hover{background:var(--hover)}
+
+  .scroll{flex:1 1 auto;overflow-y:auto;display:flex;flex-direction:column;align-items:center;padding:80px 64px 150px}
+  .scroll::-webkit-scrollbar{width:10px}
+  .scroll::-webkit-scrollbar-thumb{background:var(--line-soft);border-radius:10px;border:3px solid transparent;background-clip:content-box}
+  .thread{width:100%;max-width:720px;display:flex;flex-direction:column;gap:24px}
+
+  .user-row{display:flex;justify-content:flex-end}
+  .bubble{
+    background:var(--bubble);max-width:640px;border-radius:var(--radius-xl);
+    padding:12px 16px 12px 12px;font-size:16px;line-height:22.4px;
+  }
+  .bubble b{font-weight:600}
+
+  /* app card */
+  .app-card{
+    background:var(--surface);border:.5px solid var(--line);
+    border-radius:var(--radius-lg);overflow:hidden;
+  }
+  .app-header{
+    height:52px;display:flex;align-items:center;justify-content:space-between;
+    padding:0 12px;border-bottom:.5px solid var(--line-soft);
+  }
+  .app-name{display:flex;align-items:center;gap:8px}
+  .glyph{
+    width:20px;height:20px;border:1px solid var(--line);border-radius:5px;
+    display:grid;place-items:center;font-size:11px;font-weight:700;line-height:1;
+  }
+  .app-name .t{font-size:14px}
+  .icobtn{
+    width:32px;height:32px;border:0;background:transparent;cursor:pointer;
+    border-radius:var(--radius-md);display:grid;place-items:center;color:var(--tx);opacity:.8;
+  }
+  .icobtn:hover{background:var(--hover);opacity:1}
+  .icobtn svg{width:20px;height:20px}
+
+  /* carousel */
+  .page{position:relative;padding:16px;overflow:hidden}
+  .viewport{overflow:hidden}
+  .list{display:flex;gap:12px;transition:transform .35s cubic-bezier(.32,.72,0,1)}
+  .card{flex:0 0 220px;display:flex;flex-direction:column;gap:20px}
+  .photo{
+    position:relative;width:220px;height:280px;border-radius:12px;overflow:hidden;
+    background:var(--skel);
+  }
+  .photo .scene{position:absolute;inset:0}
+  /* cenas aproximadas por gradiente — as fotos originais não podem ser baixadas */
+  .scene.ocean{background:
+    linear-gradient(180deg,#9fc4d8 0%,#7ba8c4 26%,#5d8ba6 34%,#3f6b85 46%,#2f5468 56%,#6d7f56 68%,#8b9a5f 82%,#a8b273 100%);}
+  .scene.falls{background:
+    linear-gradient(180deg,#b9cad6 0%,#8fa8b8 20%,#6d8494 34%,#d9dde0 40%,#e8eaea 52%,#c4b9a4 66%,#d8cdb6 80%,#cfc3aa 100%);}
+  .scene.forest{background:
+    linear-gradient(180deg,#a8c8dd 0%,#8fb4cd 16%,#5f7f52 30%,#3f6238 46%,#2f4d2c 62%,#375a33 78%,#4a6b3c 100%);}
+  .scene.canyon{background:
+    linear-gradient(180deg,#cfe0ea 0%,#a9c3d4 18%,#b98a63 36%,#a3714f 52%,#8a5c40 70%,#6f4a35 100%);}
+  .photo .veil{
+    position:absolute;inset:0;
+    background:linear-gradient(180deg,rgba(0,0,0,.10) 0%,rgba(0,0,0,0) 30%,rgba(0,0,0,.05) 100%);
+  }
+  .save{
+    position:absolute;top:16px;right:16px;width:36px;height:36px;border-radius:20px;
+    background:var(--save-bg);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);
+    border:.5px solid var(--line-soft);color:var(--save-tx);
+    display:grid;place-items:center;cursor:pointer;
+  }
+  .save svg{width:20px;height:20px}
+  .save[aria-pressed="true"] svg{fill:currentColor}
+  .info{display:flex;flex-direction:column;gap:10px}
+  .info .name{font-size:12px;font-weight:600;line-height:1.4;color:var(--card-sub)}
+  .info .park{font-size:12px;line-height:1.4;color:var(--card-sub)}
+  .meta{display:flex;align-items:center;gap:4px;opacity:.75;font-size:12px;line-height:1.4;color:var(--card-meta)}
+  .meta .star{display:flex;align-items:center;gap:2px}
+  .meta .star svg{width:16px;height:16px}
+  .meta .dot{width:3px;height:3px;border-radius:50%;background:currentColor;flex:0 0 3px}
+
+  .fade{
+    position:absolute;top:16px;right:16px;bottom:16px;width:172px;pointer-events:none;
+    background:linear-gradient(to right,transparent,var(--surface) 78%);
+    border-radius:0 12px 12px 0;
+  }
+  .next{
+    position:absolute;top:172px;right:32px;width:36px;height:36px;border-radius:1000px;
+    background:var(--surface);border:.5px solid var(--line);box-shadow:0 2px 6px rgba(0,0,0,.12);
+    display:grid;place-items:center;cursor:pointer;color:var(--tx);
+  }
+  .next:hover{background:var(--hover)}
+  .next:disabled{opacity:.35;cursor:default}
+  .next svg{width:20px;height:20px}
+
+  /* claude response */
+  .claude .text{font-family:var(--font-serif);font-size:16px;line-height:1.6;padding:0 16px;margin:0}
+  .acts{display:flex;gap:2px;padding:6px 12px 20px}
+  .acts button{
+    width:24px;height:24px;border:0;background:transparent;cursor:pointer;border-radius:var(--radius-md);
+    display:grid;place-items:center;color:var(--tx);opacity:.65;
+  }
+  .acts button:hover{background:var(--hover);opacity:1}
+  .acts button.on{color:var(--brand);opacity:1}
+  .acts svg{width:14px;height:14px}
+  .sparkrow{display:flex;align-items:center;padding-left:16px}
+  .spark{width:28px;height:28px;color:var(--brand)}
+
+  .composer{
+    position:absolute;left:50%;transform:translateX(-50%);bottom:36px;z-index:6;
+    width:min(752px,calc(100% - 96px));background:var(--surface);border:.5px solid var(--line);
+    border-radius:var(--radius-2xl);box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;
+  }
+  .composer .in{padding:12px 16px}
+  .composer textarea{
+    width:100%;border:0;outline:0;resize:none;background:transparent;font-family:inherit;
+    font-size:16px;line-height:22.4px;color:var(--tx);padding:4px;min-height:30px;max-height:140px;
+  }
+  .composer textarea::placeholder{color:var(--tx-muted);opacity:.75}
+  .ctrl{display:flex;align-items:center;justify-content:space-between;padding:12px}
+  .ctrl .right{display:flex;align-items:center;gap:8px}
+  .model{
+    display:flex;align-items:center;gap:4px;height:32px;padding:0 4px 0 8px;border:0;
+    background:transparent;cursor:pointer;font-family:var(--font-serif);font-size:14px;
+    color:var(--tx);border-radius:var(--radius-md);
+  }
+  .model:hover{background:var(--hover)}
+  .model svg{width:20px;height:20px;opacity:.8}
+  .send{
+    width:32px;height:32px;border-radius:var(--radius-md);border:.5px solid var(--line);
+    background:var(--brand);color:#fff;display:grid;place-items:center;cursor:pointer;
+  }
+  .send:hover{background:#b5573a}
+  .send:disabled{opacity:.45;cursor:default}
+  .send svg{width:16px;height:16px}
+  .foot{
+    position:absolute;bottom:12px;left:0;right:0;text-align:center;z-index:4;
+    font-size:10px;color:var(--tx-ghost);pointer-events:none;
+  }
+
+  .note{
+    margin-top:32px;padding:16px 20px;border-radius:12px;background:#f7f6f2;
+    border:.5px solid rgba(31,30,29,.15);font-size:13px;line-height:1.6;color:#4d4c48;max-width:80ch;
+  }
+  .note strong{color:#141413}
+  .note code{font-family:ui-monospace,Menlo,monospace;font-size:12px}
+</style>
+</head>
+<body>
+
+<h1>Inline carousel</h1>
+<p class="lede">
+  A tela “Nearby trails” com o carrossel preenchido. Use a seta para percorrer os cards e o
+  marcador para salvar uma trilha.
+</p>
+
+<div class="toolbar">
+  <button data-theme="light" aria-pressed="true">Light</button>
+  <button data-theme="dark" aria-pressed="false">Dark</button>
+  <button data-theme="both" aria-pressed="false">Ambos</button>
+</div>
+
+<div class="frames" id="frames"></div>
+
+<p class="note">
+  <strong>Sobre as fotos.</strong> As imagens originais das trilhas são assets exportados do Figma,
+  que expiram em ~7 dias e cujo download a rede deste ambiente bloqueia
+  (<code>figma.com</code> retorna 403). No lugar delas há gradientes que aproximam a paleta de cada
+  cena — a geometria do card (220×280, raio 12, gap 12) e todos os textos, notas e metadados são os
+  reais do arquivo. O tema escuro usa os tokens de cor do arquivo no modo dark.
+</p>
+
+<script>
+const IC = {
+  side:'<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="14" height="12" rx="2.5"/><line x1="8" y1="4" x2="8" y2="16"/></svg>',
+  add:'<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 15.5V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H8l-4 2.5Z"/><line x1="10" y1="6.5" x2="10" y2="10.5"/><line x1="8" y1="8.5" x2="12" y2="8.5"/></svg>',
+  chats:'<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3.5 12V6.5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H7l-3.5 2.2V12Z"/><path d="M8 13.2v.3a2 2 0 0 0 2 2h4l2.5 1.6V10a2 2 0 0 0-1.5-1.94"/></svg>',
+  proj:'<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3.5 6.5A1.5 1.5 0 0 1 5 5h3l1.5 2H15a1.5 1.5 0 0 1 1.5 1.5v5A1.5 1.5 0 0 1 15 15H5a1.5 1.5 0 0 1-1.5-1.5v-7Z"/></svg>',
+  art:'<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3.5" y="3.5" width="6" height="6" rx="1.5"/><rect x="10.5" y="3.5" width="6" height="6" rx="1.5"/><rect x="3.5" y="10.5" width="6" height="6" rx="1.5"/><rect x="10.5" y="10.5" width="6" height="6" rx="1.5"/></svg>',
+  code:'<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 6 4 10l3.5 4"/><path d="M12.5 6 16 10l-3.5 4"/></svg>',
+  caret:'<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 8.5 10 12l3.5-3.5"/></svg>',
+  chevR:'<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 5l5 5-5 5"/></svg>',
+  mark:'<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M6 4h8a1 1 0 0 1 1 1v11l-5-3-5 3V5a1 1 0 0 1 1-1Z"/></svg>',
+  star:'<svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.6l1.9 3.9 4.3.6-3.1 3 .7 4.3L8 11.4 4.2 13.4l.7-4.3-3.1-3 4.3-.6L8 1.6Z"/></svg>',
+  spark:'<svg viewBox="0 0 28 28" fill="currentColor"><path d="M14 1.5c.5 3.2.9 4.9 1.9 6 1 1 2.7 1.4 6 1.9-3.3.5-5 .9-6 1.9-1 1-1.4 2.7-1.9 6-.5-3.3-.9-5-1.9-6-1-1-2.7-1.4-6-1.9 3.3-.5 5-.9 6-1.9 1-1.1 1.4-2.8 1.9-6Z"/></svg>',
+  up:'<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><path d="M6 9v7H4V9h2Zm0 0 3-6c1.2 0 2 .9 2 2v2h3.5c1 0 1.7 1 1.4 1.9l-1.3 4.8c-.2.8-.9 1.3-1.7 1.3H6"/></svg>',
+  down:'<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><path d="M14 11V4h2v7h-2Zm0 0-3 6c-1.2 0-2-.9-2-2v-2H5.5c-1 0-1.7-1-1.4-1.9l1.3-4.8C5.6 4.5 6.3 4 7.1 4H14"/></svg>',
+  copy:'<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><rect x="7" y="7" width="9" height="9" rx="2"/><path d="M13 7V5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h1"/></svg>',
+  retry:'<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15.5 6.5A6 6 0 1 0 16 11"/><path d="M15.5 3.5v3.2h-3.2"/></svg>',
+  plus:'<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="10" y1="5" x2="10" y2="15"/><line x1="5" y1="10" x2="15" y2="10"/></svg>',
+  arrowUp:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="13" x2="8" y2="3.5"/><path d="M4 7 8 3l4 4"/></svg>',
+  avatar:'<svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 3.5 12 8.5 17 10.5 12 12.5 10 17.5 8 12.5 3 10.5 8 8.5Z"/></svg>'
+};
+
+const TRAILS = [
+  {scene:'ocean',  name:'Ocean View Trail',      park:'Golden Gate National Park', rate:'4.6', diff:'Moderate', dist:'2.8 mi'},
+  {scene:'falls',  name:'Cascade Waterfall Trail',park:'Smith Wilderness Reserve',  rate:'4.8', diff:'Hard',     dist:'13 mi'},
+  {scene:'forest', name:'Redwood Forest Loop',   park:'Tall Timber Regional Park', rate:'4.8', diff:'Moderate', dist:'4 mi'},
+  {scene:'canyon', name:'Canyon Ridge Trail',    park:'Red Mesa State Park',       rate:'4.5', diff:'Hard',     dist:'7.2 mi'}
+];
+
+const card = t => `
+  <div class="card">
+    <div class="photo">
+      <div class="scene ${t.scene}"></div><div class="veil"></div>
+      <button class="save" aria-pressed="false" aria-label="Salvar ${t.name}">${IC.mark}</button>
+    </div>
+    <div class="info">
+      <span class="name">${t.name}</span>
+      <span class="park">${t.park}</span>
+      <span class="meta">
+        <span class="star">${IC.star}${t.rate}</span>
+        <span class="dot"></span><span>${t.diff}</span>
+        <span class="dot"></span><span>${t.dist}</span>
+      </span>
+    </div>
+  </div>`;
+
+const windowHTML = () => `
+  <aside class="sidebar">
+    <div class="top">
+      <button class="navbtn tall">${IC.side}</button>
+      <button class="navbtn">${IC.add}</button>
+      <button class="navbtn">${IC.chats}</button>
+      <button class="navbtn">${IC.proj}</button>
+      <button class="navbtn">${IC.art}</button>
+      <button class="navbtn">${IC.code}</button>
+    </div>
+    <span class="avatar">${IC.avatar}</span>
+  </aside>
+  <div class="main">
+    <div class="titlebar">
+      <button class="chip">Nearby trails ${IC.caret}</button>
+      <button class="share">Share</button>
+    </div>
+    <div class="scroll">
+      <div class="thread">
+        <div class="user-row"><div class="bubble">Find 4 nearby hikes in <b>App</b></div></div>
+        <div class="app-card">
+          <div class="app-header">
+            <div class="app-name"><span class="glyph">A</span><span class="t">App</span></div>
+            <button class="icobtn">${IC.code}</button>
+          </div>
+          <div class="page">
+            <div class="viewport"><div class="list">${TRAILS.map(card).join('')}</div></div>
+            <div class="fade"></div>
+            <button class="next" aria-label="Ver mais">${IC.chevR}</button>
+          </div>
+        </div>
+        <div class="claude">
+          <p class="text">Here’s 4 hikes nearby. Bookmark any that look good, or tell me more about what you’re looking for—length, difficulty, scenery—and I can refine the list.</p>
+          <div class="acts">
+            <button class="js-fb" data-fb="up">${IC.up}</button>
+            <button class="js-fb" data-fb="down">${IC.down}</button>
+            <button>${IC.copy}</button>
+            <button>${IC.retry}</button>
+          </div>
+          <div class="sparkrow"><span class="spark">${IC.spark}</span></div>
+        </div>
+      </div>
+    </div>
+    <form class="composer">
+      <div class="in"><textarea rows="1" placeholder="Reply to Claude"></textarea></div>
+      <div class="ctrl">
+        <button type="button" class="icobtn">${IC.plus}</button>
+        <div class="right">
+          <button type="button" class="model">Sonnet 4.5 ${IC.caret}</button>
+          <button type="submit" class="send" disabled>${IC.arrowUp}</button>
+        </div>
+      </div>
+    </form>
+    <div class="foot">Claude can make mistakes. Please double-check responses.</div>
+  </div>`;
+
+const frames = document.getElementById('frames');
+['light','dark'].forEach(theme => {
+  const wrap = document.createElement('div');
+  wrap.className = 'frame';
+  wrap.dataset.theme = theme;
+  wrap.innerHTML = `<p class="frame-label">${theme === 'light' ? 'Light' : 'Dark'}</p>
+                    <div class="window ${theme}">${windowHTML()}</div>`;
+  frames.appendChild(wrap);
+});
+
+/* carrossel */
+document.querySelectorAll('.window').forEach(win => {
+  const list = win.querySelector('.list');
+  const next = win.querySelector('.next');
+  const STEP = 220 + 12;
+  const MAX = TRAILS.length - 3;   // 3 cards visíveis
+  let offset = 0;
+  next.addEventListener('click', () => {
+    offset = offset >= MAX ? 0 : offset + 1;   // volta ao início no fim
+    list.style.transform = `translateX(-${offset * STEP}px)`;
+  });
+
+  win.querySelectorAll('.save').forEach(b => b.addEventListener('click', () => {
+    b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
+  }));
+
+  win.querySelectorAll('.js-fb').forEach(b => b.addEventListener('click', () => {
+    const was = b.classList.contains('on');
+    win.querySelectorAll('.js-fb').forEach(x => x.classList.remove('on'));
+    if (!was) b.classList.add('on');
+  }));
+
+  const ta = win.querySelector('textarea'), send = win.querySelector('.send');
+  ta.addEventListener('input', () => {
+    ta.style.height = 'auto';
+    ta.style.height = Math.min(ta.scrollHeight, 140) + 'px';
+    send.disabled = ta.value.trim() === '';
+  });
+  win.querySelector('.composer').addEventListener('submit', e => {
+    e.preventDefault();
+    ta.value = ''; ta.style.height = 'auto'; send.disabled = true;
+  });
+});
+
+/* alternador de tema */
+document.querySelectorAll('.toolbar button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.toolbar button').forEach(b => b.setAttribute('aria-pressed', b === btn));
+    const t = btn.dataset.theme;
+    document.querySelectorAll('.frame').forEach(f => {
+      f.style.display = (t === 'both' || f.dataset.theme === t) ? '' : 'none';
+    });
+  });
+});
+document.querySelector('.toolbar button').click();
+</script>
+</body>
+</html>

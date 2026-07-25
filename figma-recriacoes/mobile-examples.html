@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Examples — telas mobile (recriação)</title>
+<style>
+  :root{
+    --brand:#c6613f;
+    --font-sans:'Anthropic Sans','Styrene B',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    --font-serif:'Tiempos Text','Iowan Old Style',Georgia,'Times New Roman',serif;
+    --radius-full:9999px;
+    --radius-xl:24px;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;padding:48px 24px 96px;background:#eceae4;
+    font-family:var(--font-sans);color:#141413;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1{font-size:clamp(32px,5vw,56px);font-weight:600;letter-spacing:-.02em;margin:0 0 12px}
+  .lede{margin:0 0 56px;font-size:14px;line-height:1.6;color:#4d4c48;max-width:64ch}
+
+  .group{margin-bottom:72px}
+  .group > h2{font-size:20px;font-weight:600;margin:0 0 24px}
+  .pair{display:flex;flex-wrap:wrap;gap:32px}
+  .stage{
+    padding:40px 32px;border-radius:32px;flex:0 0 auto;
+    display:flex;flex-direction:column;gap:16px;align-items:center;
+  }
+  .stage.light{background:#faf9f5}
+  .stage.dark{background:#141413}
+  .stage .tag{
+    font-size:11px;letter-spacing:.12em;text-transform:uppercase;align-self:flex-start;
+    color:#8a8880;
+  }
+  .stage.dark .tag{color:#7a7871}
+
+  /* ---------- Phone ---------- */
+  .phone{
+    width:402px;height:874px;position:relative;overflow:hidden;
+    border-radius:48px;border:1px solid;
+    box-shadow:0 8px 24px rgba(0,0,0,.12);
+    display:flex;flex-direction:column;
+  }
+  .phone.light{
+    --screen:#faf9f5; --surface:#ffffff; --bubble:#f0eee6;
+    --tx:#141413; --tx-muted:#73726c; --line:rgba(31,30,29,.3);
+    --line-soft:rgba(31,30,29,.12); --navbtn:rgba(255,255,255,.6);
+    --voice-bg:#141413; --voice-ic:#faf9f5; --hover:rgba(31,30,29,.06);
+    background:var(--screen);border-color:rgba(31,30,29,.3);color:var(--tx);
+  }
+  .phone.dark{
+    --screen:#262624; --surface:#30302e; --bubble:#30302e;
+    --tx:#faf9f5; --tx-muted:#9c9a92; --line:rgba(222,220,209,.3);
+    --line-soft:rgba(222,220,209,.12); --navbtn:rgba(255,255,255,.08);
+    --voice-bg:#faf9f5; --voice-ic:#141413; --hover:rgba(255,255,255,.07);
+    background:var(--screen);border-color:rgba(222,220,209,.2);color:var(--tx);
+  }
+
+  /* status bar */
+  .statusbar{
+    height:50px;padding:21px 16px 0;display:flex;align-items:center;
+    justify-content:space-between;flex:0 0 auto;position:relative;z-index:3;
+  }
+  .statusbar .time{font-size:17px;font-weight:600;letter-spacing:-.2px}
+  .statusbar .levels{display:flex;gap:7px;align-items:center}
+  .statusbar svg{display:block;color:var(--tx)}
+
+  /* nav bar */
+  .navbar{
+    height:54px;padding:0 16px;display:flex;align-items:center;justify-content:space-between;
+    flex:0 0 auto;position:relative;z-index:3;
+  }
+  .navbtn{
+    width:44px;height:44px;border-radius:var(--radius-full);border:0;cursor:pointer;
+    background:var(--navbtn);box-shadow:0 2px 8px rgba(0,0,0,.08);
+    display:grid;place-items:center;color:var(--tx);flex:0 0 auto;
+  }
+  .phone.dark .navbtn{box-shadow:none}
+  .navbtn svg{width:24px;height:24px}
+  .navtitle{
+    display:flex;align-items:center;justify-content:center;gap:2px;height:24px;
+    background:transparent;border:0;cursor:pointer;color:var(--tx);font-family:inherit;
+    font-size:17px;font-weight:600;padding-left:16px;
+  }
+  .navtitle svg{width:24px;height:24px;margin-top:4px}
+
+  /* conversation area */
+  .body{flex:1 1 auto;overflow-y:auto;position:relative;z-index:1;padding-bottom:150px}
+  .body::-webkit-scrollbar{width:0}
+
+  .user-row{display:flex;justify-content:flex-end;padding:0 16px;margin-top:10px}
+  .bubble{
+    background:var(--bubble);max-width:312px;border-radius:var(--radius-xl);
+    padding:14px 16px;font-size:15px;line-height:1.4;
+  }
+  .answer{padding:0 16px;margin-top:20px}
+  .answer p{
+    font-family:var(--font-serif);font-size:17px;line-height:22px;letter-spacing:-.25px;
+    margin:0 0 12px;
+  }
+  .answer p:last-child{margin-bottom:0}
+  .controls{display:flex;gap:8px;align-items:center;height:44px;padding:0 16px;margin-top:8px}
+  .controls button{
+    width:24px;height:24px;border:0;background:transparent;cursor:pointer;padding:0;
+    color:var(--tx);display:grid;place-items:center;opacity:.85;
+  }
+  .controls button:hover{opacity:1}
+  .controls button.on{color:var(--brand);opacity:1}
+  .controls svg{width:24px;height:24px}
+  .signature{display:flex;gap:16px;align-items:center;height:44px;padding:0 16px}
+  .signature .spark{width:28px;height:28px;color:var(--brand);flex:0 0 28px}
+  .signature .disclaimer{
+    flex:1;text-align:right;font-size:11px;line-height:1.5;color:var(--tx-muted);
+  }
+
+  /* empty state (new chat) */
+  .empty{
+    flex:1 1 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:20px;padding-bottom:120px;position:relative;z-index:1;
+  }
+  .empty .spark{width:36px;height:36px;color:var(--brand)}
+  .empty h3{
+    margin:0;font-family:var(--font-serif);font-size:24px;line-height:1.3;font-weight:400;
+    text-align:center;letter-spacing:-.3px;max-width:240px;
+  }
+
+  /* composer */
+  .composer{
+    position:absolute;left:50%;transform:translateX(-50%);bottom:34px;width:370px;z-index:4;
+    background:var(--surface);border-radius:var(--radius-xl);
+    box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;
+  }
+  .phone.dark .composer{box-shadow:0 2px 8px rgba(0,0,0,.4)}
+  .composer .field{min-height:48px;padding:12px 16px;display:flex;align-items:center}
+  .composer input{
+    width:100%;border:0;outline:0;background:transparent;font-family:inherit;
+    font-size:15px;line-height:1.4;color:var(--tx);
+  }
+  .composer input::placeholder{color:var(--tx-muted)}
+  .composer .btnrow{display:flex;align-items:center;justify-content:space-between;padding:8px}
+  .composer .btnrow > div{display:flex;align-items:center;gap:4px}
+  .icobtn{
+    border:0;background:transparent;cursor:pointer;padding:6px;border-radius:var(--radius-full);
+    color:var(--tx);display:grid;place-items:center;
+  }
+  .icobtn:hover{background:var(--hover)}
+  .icobtn svg{width:24px;height:24px}
+  .voice{
+    width:36px;height:36px;border-radius:18px;border:0;cursor:pointer;
+    background:var(--voice-bg);color:var(--voice-ic);display:grid;place-items:center;
+  }
+  .voice svg{width:24px;height:24px}
+
+  /* ---------- Drawer (sidebar) ---------- */
+  .scrim{
+    position:absolute;inset:0;z-index:5;background:rgba(0,0,0,.18);
+    opacity:0;pointer-events:none;transition:opacity .25s ease;
+  }
+  .phone.drawer-open .scrim{opacity:1;pointer-events:auto}
+  .drawer{
+    position:absolute;top:0;bottom:0;left:0;width:340px;z-index:6;
+    background:var(--screen);
+    display:flex;flex-direction:column;
+    transform:translateX(-100%);transition:transform .28s cubic-bezier(.32,.72,0,1);
+    box-shadow:2px 0 24px rgba(0,0,0,.12);
+  }
+  .phone.drawer-open .drawer{transform:translateX(0)}
+  .drawer .top{padding:50px 20px 0}
+  .wordmark{font-family:var(--font-serif);font-size:28px;line-height:1;margin:16px 0 24px}
+  .drawer nav{display:flex;flex-direction:column;gap:2px;padding:0 8px}
+  .navlink{
+    display:flex;align-items:center;gap:16px;height:44px;padding:0 12px;border-radius:12px;
+    border:0;background:transparent;cursor:pointer;color:var(--tx);font-family:inherit;
+    font-size:17px;text-align:left;width:100%;
+  }
+  .navlink:hover{background:var(--hover)}
+  .navlink svg{width:24px;height:24px;flex:0 0 24px;opacity:.9}
+  .seclabel{font-size:13px;color:var(--tx-muted);padding:24px 20px 8px}
+  .chats{display:flex;flex-direction:column;gap:2px;padding:0 8px;overflow-y:auto;flex:1 1 auto}
+  .chats::-webkit-scrollbar{width:0}
+  .chatitem{
+    height:44px;padding:0 12px;border-radius:12px;border:0;background:transparent;cursor:pointer;
+    color:var(--tx);font-family:inherit;font-size:17px;text-align:left;width:100%;
+    display:flex;align-items:center;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
+  }
+  .chatitem:hover{background:var(--hover)}
+  .chatitem.active{background:var(--bubble)}
+  .allchats{
+    display:flex;align-items:center;gap:6px;padding:8px 20px 0;font-size:15px;color:var(--tx-muted);
+    background:transparent;border:0;cursor:pointer;font-family:inherit;
+  }
+  .allchats svg{width:16px;height:16px}
+  .drawer .foot{
+    padding:16px 20px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px;
+  }
+  .account{
+    display:flex;align-items:center;gap:10px;padding:6px 16px 6px 6px;border-radius:var(--radius-full);
+    background:var(--surface);box-shadow:0 2px 8px rgba(0,0,0,.08);border:0;cursor:pointer;
+    font-family:inherit;font-size:15px;color:var(--tx);
+  }
+  .phone.dark .account{box-shadow:none;background:#3a3a37}
+  .avatar{
+    width:32px;height:32px;border-radius:var(--radius-full);flex:0 0 32px;
+    background:#e8e5da;color:#5c5b57;display:grid;place-items:center;font-size:12px;font-weight:600;
+  }
+  .phone.dark .avatar{background:#4a4a46;color:#e8e5da}
+  .fab{
+    width:52px;height:52px;border-radius:var(--radius-full);border:0;cursor:pointer;flex:0 0 52px;
+    background:var(--brand);color:#fff;display:grid;place-items:center;
+    box-shadow:0 2px 8px rgba(0,0,0,.16);
+  }
+  .fab:hover{background:#b5573a}
+  .fab svg{width:24px;height:24px}
+
+  .note{
+    margin-top:24px;padding:16px 20px;border-radius:12px;background:#f7f6f2;
+    border:.5px solid rgba(31,30,29,.15);font-size:13px;line-height:1.6;color:#4d4c48;
+    max-width:80ch;
+  }
+  .note strong{color:#141413}
+</style>
+</head>
+<body>
+
+<h1>Examples</h1>
+<p class="lede">
+  As três telas de exemplo da página <em>📱 Mobile components</em>, cada uma em tema claro e escuro.
+  Toque no ícone de menu para abrir a barra lateral; o campo de texto e os controles funcionam.
+</p>
+
+<!-- ============ SIDEBAR ============ -->
+<section class="group">
+  <h2>Sidebar</h2>
+  <div class="pair">
+    <div class="stage light"><span class="tag">Light</span><div class="phone light drawer-open" data-screen="chat"></div></div>
+    <div class="stage dark"><span class="tag">Dark</span><div class="phone dark drawer-open" data-screen="chat"></div></div>
+  </div>
+</section>
+
+<!-- ============ NEW CHAT ============ -->
+<section class="group">
+  <h2>New chat</h2>
+  <div class="pair">
+    <div class="stage light"><span class="tag">Light</span><div class="phone light" data-screen="new"></div></div>
+    <div class="stage dark"><span class="tag">Dark</span><div class="phone dark" data-screen="new"></div></div>
+  </div>
+</section>
+
+<!-- ============ ACTIVE CHAT ============ -->
+<section class="group">
+  <h2>Active chat</h2>
+  <div class="pair">
+    <div class="stage light"><span class="tag">Light</span><div class="phone light" data-screen="chat"></div></div>
+    <div class="stage dark"><span class="tag">Dark</span><div class="phone dark" data-screen="chat"></div></div>
+  </div>
+</section>
+
+<p class="note">
+  <strong>Fidelidade.</strong> Medidas e tokens vêm do arquivo Figma: tela 402×874 com raio 48,
+  nav bar de 54px com botões redondos de 44px, balão do usuário com raio 24 e máximo de 312px,
+  resposta em serifada 17/22 com <code>letter-spacing −0.25</code>, e composer de 370px ancorado
+  a 34px da base. As cores do tema escuro vêm dos mesmos tokens de cor do arquivo, no modo dark.
+  Ícones foram redesenhados inline — os SVGs exportados pelo Figma expiram e a rede aqui bloqueia
+  <code>figma.com</code>.
+</p>
+
+<script>
+/* ---------- ícones ---------- */
+const IC = {
+  menu: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><line x1="4" y1="8" x2="20" y2="8"/><line x1="4" y1="12" x2="14" y2="12"/><line x1="4" y1="16" x2="20" y2="16"/></svg>',
+  caret: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 10.5l4 4 4-4"/></svg>',
+  compose: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M4 18V7.5A2.5 2.5 0 0 1 6.5 5h11A2.5 2.5 0 0 1 20 7.5v6A2.5 2.5 0 0 1 17.5 16H9l-5 3.5Z"/><line x1="12" y1="8" x2="12" y2="13" stroke-linecap="round"/><line x1="9.5" y1="10.5" x2="14.5" y2="10.5" stroke-linecap="round"/></svg>',
+  plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+  mic: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2.5" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0"/><line x1="12" y1="17.5" x2="12" y2="21"/></svg>',
+  voice: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><line x1="5" y1="10" x2="5" y2="14"/><line x1="9" y1="7" x2="9" y2="17"/><line x1="13" y1="4.5" x2="13" y2="19.5"/><line x1="17" y1="8" x2="17" y2="16"/><line x1="21" y1="10.5" x2="21" y2="13.5"/></svg>',
+  chats: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M4 14V7.5A2.5 2.5 0 0 1 6.5 5h7A2.5 2.5 0 0 1 16 7.5v4A2.5 2.5 0 0 1 13.5 14H8l-4 2.6V14Z"/><path d="M9 15.5v.5a2.5 2.5 0 0 0 2.5 2.5h5l3.5 2.2V13a2.5 2.5 0 0 0-2-2.45"/></svg>',
+  projects: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><rect x="3.5" y="7.5" width="17" height="12" rx="2.5"/><path d="M8 7.5V6a1.5 1.5 0 0 1 1.5-1.5h5A1.5 1.5 0 0 1 16 6v1.5"/></svg>',
+  artifacts: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3.5" y="3.5" width="7" height="7" rx="1.8"/><rect x="13.5" y="3.5" width="7" height="7" rx="3.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="3.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.8"/></svg>',
+  code: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6.5 4.5 12 9 17.5"/><path d="M15 6.5 19.5 12 15 17.5"/></svg>',
+  chev: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 5.5 16 12l-6.5 6.5"/></svg>',
+  spark: '<svg viewBox="0 0 28 28" fill="currentColor"><path d="M14 1.2c.5 3.4.9 5.2 2 6.3 1.1 1.1 2.9 1.5 6.3 2-3.4.5-5.2.9-6.3 2-1.1 1.1-1.5 2.9-2 6.3-.5-3.4-.9-5.2-2-6.3-1.1-1.1-2.9-1.5-6.3-2 3.4-.5 5.2-.9 6.3-2 1.1-1.1 1.5-2.9 2-6.3Z"/><path d="M14 3.6c.3 2.4.7 3.7 1.5 4.6.9.9 2.2 1.2 4.6 1.5-2.4.3-3.7.7-4.6 1.5-.8.9-1.2 2.2-1.5 4.6-.3-2.4-.7-3.7-1.5-4.6-.9-.8-2.2-1.2-4.6-1.5 2.4-.3 3.7-.7 4.6-1.5.8-.9 1.2-2.2 1.5-4.6Z" transform="rotate(45 14 9.7)"/></svg>',
+  copy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2.5"/><path d="M16 9V6.5A2.5 2.5 0 0 0 13.5 4h-7A2.5 2.5 0 0 0 4 6.5v7A2.5 2.5 0 0 0 6.5 16H9"/></svg>',
+  share: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15.5V4"/><path d="M8 7.5 12 3.5l4 4"/><path d="M5 14v4.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V14"/></svg>',
+  up: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M7 11v9H4v-9h3Zm0 0 4-7.5c1.5 0 2.5 1.1 2.5 2.5v2.5h4.4c1.3 0 2.2 1.2 1.8 2.4l-1.7 6c-.3 1-1.2 1.6-2.2 1.6H7"/></svg>',
+  down: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M17 13V4h3v9h-3Zm0 0-4 7.5c-1.5 0-2.5-1.1-2.5-2.5v-2.5H6.1c-1.3 0-2.2-1.2-1.8-2.4l1.7-6C6.3 6.1 7.2 5.5 8.2 5.5H17"/></svg>',
+  retry: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 8.5A7.5 7.5 0 1 0 19.6 14"/><path d="M19 4v4.6h-4.6"/></svg>',
+  more: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="6" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="18" cy="12" r="1.6"/></svg>',
+  cell: '<svg width="19" height="12" viewBox="0 0 19 12" fill="currentColor"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>',
+  wifi: '<svg width="17" height="12" viewBox="0 0 17 12" fill="currentColor"><path d="M8.5 11.6 6.2 8.9a3.6 3.6 0 0 1 4.6 0l-2.3 2.7Z"/><path d="M8.5 4.2c2 0 3.9.7 5.3 2l1.4-1.7A10.3 10.3 0 0 0 8.5 2C6 2 3.7 2.9 1.8 4.5L3.2 6.2a8 8 0 0 1 5.3-2Z" opacity=".95"/><path d="M8.5 7.2c1.2 0 2.3.4 3.2 1.2l1.4-1.7a7 7 0 0 0-9.2 0l1.4 1.7a4.8 4.8 0 0 1 3.2-1.2Z"/></svg>',
+  batt: '<svg width="27" height="13" viewBox="0 0 27 13" fill="none"><rect x=".5" y=".5" width="22" height="12" rx="3.8" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="19" height="9" rx="2.5" fill="currentColor"/><path d="M24.5 4.5v4a2.1 2.1 0 0 0 0-4Z" fill="currentColor" opacity=".5"/></svg>'
+};
+
+const CHATS = ['Short Poem','Help with Python Code','Essay Feedback Needed','Math Homework Help','Resume Review','Debugging JavaScript'];
+const POEM = ['Here’s a short poem for you:','Morning dew sparkles bright,','Silver threads on emerald grass,','Nature’s jewels catch light,','Each moment quick to pass,','Golden sun climbs the sky,','Shadows dance and gently sway,','Time whispers soft goodbye,','To another fleeting day.'];
+
+const statusbar = () => `
+  <div class="statusbar">
+    <span class="time">9:41</span>
+    <span class="levels">${IC.cell}${IC.wifi}${IC.batt}</span>
+  </div>`;
+
+const navbar = () => `
+  <div class="navbar">
+    <button class="navbtn js-menu" aria-label="Abrir menu">${IC.menu}</button>
+    <button class="navtitle js-model">Opus 4.6 ${IC.caret}</button>
+    <button class="navbtn" aria-label="Novo chat">${IC.compose}</button>
+  </div>`;
+
+const composer = () => `
+  <div class="composer">
+    <div class="field"><input placeholder="Chat with Claude" /></div>
+    <div class="btnrow">
+      <div><button class="icobtn" aria-label="Adicionar">${IC.plus}</button></div>
+      <div>
+        <button class="icobtn" aria-label="Ditar">${IC.mic}</button>
+        <button class="voice" aria-label="Modo de voz">${IC.voice}</button>
+      </div>
+    </div>
+  </div>`;
+
+const drawer = () => `
+  <div class="scrim js-scrim"></div>
+  <div class="drawer">
+    <div class="top">
+      <div class="wordmark">Claude</div>
+    </div>
+    <nav>
+      <button class="navlink">${IC.chats}Chats</button>
+      <button class="navlink">${IC.projects}Projects</button>
+      <button class="navlink">${IC.artifacts}Artifacts</button>
+      <button class="navlink">${IC.code}Code</button>
+    </nav>
+    <div class="seclabel">Recents</div>
+    <div class="chats">
+      ${CHATS.map((c,i)=>`<button class="chatitem${i===0?' active':''}">${c}</button>`).join('')}
+      <button class="allchats">All Chats ${IC.chev}</button>
+    </div>
+    <div class="foot">
+      <button class="account"><span class="avatar">KC</span>Khalil Cader</button>
+      <button class="fab" aria-label="Novo chat">${IC.compose}</button>
+    </div>
+  </div>`;
+
+const chatBody = () => `
+  <div class="body">
+    <div class="user-row"><div class="bubble">write a short poem please</div></div>
+    <div class="answer">${POEM.map(l=>`<p>${l}</p>`).join('')}</div>
+    <div class="controls">
+      <button aria-label="Copiar">${IC.copy}</button>
+      <button aria-label="Compartilhar">${IC.share}</button>
+      <button class="js-fb" data-fb="up" aria-label="Boa resposta">${IC.up}</button>
+      <button class="js-fb" data-fb="down" aria-label="Resposta ruim">${IC.down}</button>
+      <button aria-label="Gerar novamente">${IC.retry}</button>
+      <button aria-label="Mais">${IC.more}</button>
+    </div>
+    <div class="signature">
+      <span class="spark">${IC.spark}</span>
+      <span class="disclaimer">Claude can make mistakes<br>Please double check responses</span>
+    </div>
+  </div>`;
+
+const emptyBody = () => `
+  <div class="empty">
+    <span class="spark">${IC.spark}</span>
+    <h3>How can I help you<br>this morning?</h3>
+  </div>`;
+
+document.querySelectorAll('.phone').forEach(phone => {
+  const isChat = phone.dataset.screen === 'chat';
+  phone.innerHTML = statusbar() + navbar() + (isChat ? chatBody() : emptyBody()) + composer() + drawer();
+
+  phone.querySelector('.js-menu').addEventListener('click', () => phone.classList.toggle('drawer-open'));
+  phone.querySelector('.js-scrim').addEventListener('click', () => phone.classList.remove('drawer-open'));
+
+  phone.querySelectorAll('.js-fb').forEach(b => b.addEventListener('click', () => {
+    const was = b.classList.contains('on');
+    phone.querySelectorAll('.js-fb').forEach(x => x.classList.remove('on'));
+    if (!was) b.classList.add('on');
+  }));
+
+  const models = ['Opus 4.6', 'Sonnet 4.5', 'Haiku 4.5'];
+  const title = phone.querySelector('.js-model');
+  let mi = 0;
+  title.addEventListener('click', () => {
+    mi = (mi + 1) % models.length;
+    title.innerHTML = models[mi] + ' ' + IC.caret;
+  });
+});
+</script>
+</body>
+</html>
