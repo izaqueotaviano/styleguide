@@ -1,8 +1,7 @@
-<!doctype html>
-<html lang="pt-br">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<!DOCTYPE html>
+<html lang="pt-br"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Televendas — novo pedido</title>
 <style>
   /* ============================================================
@@ -381,17 +380,17 @@
   }
   .linkrow code{flex:1;font-family:var(--f-mono);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--tx-secondary)}
 
-  .success{
+  .okscreen{
     text-align:center;padding:48px 24px;display:flex;flex-direction:column;align-items:center;gap:16px;
   }
-  .success .mark{
+  .okscreen .mark{
     width:64px;height:64px;border-radius:var(--r-full);background:var(--bg-success);color:var(--tx-success);
     display:grid;place-items:center;
   }
-  .success .mark svg{width:30px;height:30px}
-  .success h2{margin:0;font-family:var(--f-serif);font-size:26px;font-weight:400;letter-spacing:-.01em}
-  .success p{margin:0;font-size:14px;line-height:1.6;color:var(--tx-tertiary);max-width:44ch}
-  .success .box{
+  .okscreen .mark svg{width:30px;height:30px}
+  .okscreen h2{margin:0;font-family:var(--f-serif);font-size:26px;font-weight:400;letter-spacing:-.01em}
+  .okscreen p{margin:0;font-size:14px;line-height:1.6;color:var(--tx-tertiary);max-width:44ch}
+  .okscreen .box{
     margin-top:8px;width:100%;max-width:420px;background:var(--bg-primary);
     border:.5px solid var(--bd-tertiary);border-radius:var(--r-xl);padding:16px;text-align:left;
   }
@@ -420,7 +419,7 @@
   <!-- rail -->
   <aside class="rail">
     <div class="logo">T</div>
-    <nav id="rail"></nav>
+    <nav id="rail"><button class="railbtn" aria-label="home"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M3.5 8.5 10 3.5l6.5 5V16a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1V8.5Z"></path></svg></button><button class="railbtn" aria-label="users"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><circle cx="8" cy="7" r="2.6"></circle><path d="M3 16c0-2.4 2.2-4 5-4s5 1.6 5 4"></path><path d="M14 6.2a2.4 2.4 0 0 1 0 4.6"></path><path d="M15.4 12.6c1.4.6 2.3 1.7 2.3 3.4"></path></svg></button><button class="railbtn" aria-label="box"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M10 2.8 17 6.4v7.2L10 17.2 3 13.6V6.4l7-3.6Z"></path><path d="M3 6.4 10 10l7-3.6M10 10v7.2"></path></svg></button><button class="railbtn" aria-current="true" aria-label="orders"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><rect x="4" y="3" width="12" height="14" rx="2"></rect><line x1="7" y1="7" x2="13" y2="7" stroke-linecap="round"></line><line x1="7" y1="10" x2="13" y2="10" stroke-linecap="round"></line><line x1="7" y1="13" x2="11" y2="13" stroke-linecap="round"></line></svg></button><button class="railbtn" aria-label="chart"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="4" y1="16" x2="4" y2="10"></line><line x1="10" y1="16" x2="10" y2="5"></line><line x1="16" y1="16" x2="16" y2="12"></line></svg></button></nav>
     <div class="me">RC</div>
   </aside>
 
@@ -433,14 +432,93 @@
       <div class="callchip">
         <span class="pip"></span>
         Em chamada
-        <span class="t" id="timer">00:00</span>
+        <span class="t" id="timer">02:14</span>
       </div>
     </header>
 
     <div class="work">
       <section class="center">
-        <div class="stepper" id="stepper"></div>
-        <div class="pane" id="pane"></div>
+        <div class="stepper" id="stepper">
+      <button class="step " aria-current="true" data-step="1">
+        <span class="num">1</span>Cliente
+      </button><span class="sep"></span>
+      <button class="step " disabled="" data-step="2">
+        <span class="num">2</span>Produtos
+      </button><span class="sep"></span>
+      <button class="step " disabled="" data-step="3">
+        <span class="num">3</span>Entrega
+      </button><span class="sep"></span>
+      <button class="step " disabled="" data-step="4">
+        <span class="num">4</span>Pagamento
+      </button></div>
+        <div class="pane" id="pane">
+    <h2 class="sec">Cliente</h2>
+    <p class="sub">Busque por razão social, CNPJ ou telefone.</p>
+    
+    
+      <div class="search">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="9" cy="9" r="5.2"></circle><line x1="13" y1="13" x2="16.5" y2="16.5"></line></svg>
+        <input class="field" id="qCustomer" placeholder="Nome, CNPJ ou telefone…" value="" autocomplete="off">
+      </div>
+      <div class="list">
+        
+          <button class="rowcard" data-cust="1">
+            <div class="ico">MS</div>
+            <div class="body">
+              <div class="name">Mercearia São Jorge <span class="tag success">Recorrente</span></div>
+              <div class="meta"><span class="mono">12.345.678/0001-90</span> · <span class="mono">(11) 98812-4477</span> · São Paulo · SP</div>
+            </div>
+            <div class="right">
+              <span class="unit">Última compra</span>
+              <span style="font-size:13px">12/07</span>
+            </div>
+          </button>
+          <button class="rowcard" data-cust="2">
+            <div class="ico">PE</div>
+            <div class="body">
+              <div class="name">Padaria Estrela do Norte <span class="tag success">Recorrente</span></div>
+              <div class="meta"><span class="mono">23.456.789/0001-04</span> · <span class="mono">(11) 97744-1290</span> · Guarulhos · SP</div>
+            </div>
+            <div class="right">
+              <span class="unit">Última compra</span>
+              <span style="font-size:13px">03/07</span>
+            </div>
+          </button>
+          <button class="rowcard" data-cust="3">
+            <div class="ico">BT</div>
+            <div class="body">
+              <div class="name">Bar do Tião <span class="tag warning">Inativo 60d</span></div>
+              <div class="meta"><span class="mono">34.567.890/0001-18</span> · <span class="mono">(11) 96633-8821</span> · Osasco · SP</div>
+            </div>
+            <div class="right">
+              <span class="unit">Última compra</span>
+              <span style="font-size:13px">28/05</span>
+            </div>
+          </button>
+          <button class="rowcard" data-cust="4">
+            <div class="ico">RS</div>
+            <div class="body">
+              <div class="name">Restaurante Sabor Caseiro <span class="tag success">Recorrente</span></div>
+              <div class="meta"><span class="mono">45.678.901/0001-22</span> · <span class="mono">(11) 95522-7010</span> · Barueri · SP</div>
+            </div>
+            <div class="right">
+              <span class="unit">Última compra</span>
+              <span style="font-size:13px">19/07</span>
+            </div>
+          </button>
+          <button class="rowcard" data-cust="5">
+            <div class="ico">EV</div>
+            <div class="body">
+              <div class="name">Empório Vila Nova <span class="tag info">Primeira compra</span></div>
+              <div class="meta"><span class="mono">56.789.012/0001-36</span> · <span class="mono">(11) 94411-5533</span> · São Paulo · SP</div>
+            </div>
+            <div class="right">
+              <span class="unit">Última compra</span>
+              <span style="font-size:13px">—</span>
+            </div>
+          </button>
+      </div>
+  </div>
       </section>
 
       <aside class="aside">
@@ -448,8 +526,22 @@
           <h3>Carrinho</h3>
           <span class="count" id="cartCount">0 itens</span>
         </div>
-        <div id="cartArea" style="flex:1 1 auto;min-height:0;display:flex;flex-direction:column"></div>
-        <div class="totals" id="totals"></div>
+        <div id="cartArea" style="flex:1 1 auto;min-height:0;display:flex;flex-direction:column">
+    <div class="empty">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><path d="M2.5 3h1.8l1.9 9.2a1.5 1.5 0 0 0 1.5 1.2h6.6a1.5 1.5 0 0 0 1.5-1.2L17 6H5"></path><circle cx="8" cy="16.5" r="1"></circle><circle cx="14.5" cy="16.5" r="1"></circle></svg>
+      <p>O carrinho está vazio. Adicione produtos no passo 2.</p>
+    </div></div>
+        <div class="totals" id="totals">
+    <div class="trow"><span>Subtotal</span><span class="v">R$&nbsp;0,00</span></div>
+    <div class="trow "><span>Entrega padrão</span><span class="v">—</span></div>
+    
+    <div class="grand"><span class="l">Total</span><span class="v">R$&nbsp;0<span class="cents">,00</span></span></div>
+    <div class="cta">
+      <button class="btn primary block" id="cartNext" disabled="">
+             Escolher produtos <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h9"></path><path d="M8.5 4.5 12 8l-3.5 3.5"></path></svg>
+           </button>
+      
+    </div></div>
       </aside>
     </div>
   </div>
@@ -547,6 +639,7 @@ const cartEntries = () => Object.entries(state.cart).filter(([,q]) => q > 0);
 const itemCount = () => cartEntries().reduce((s,[,q]) => s + q, 0);
 const subtotal = () => cartEntries().reduce((s,[sku,q]) => s + product(sku).preco * q, 0);
 const shippingCost = () => {
+  if (itemCount() === 0) return 0;          // sem itens, não há frete a cobrar
   const s = SHIPPING.find(s => s.id === state.shipping);
   return (state.shipping === 'padrao' && subtotal() >= 800) ? 0 : s.v;
 };
@@ -777,7 +870,7 @@ function stepPayment(){
 function successView(){
   const ch = CHANNELS.find(c => c.id === state.channel);
   return `
-    <div class="success">
+    <div class="okscreen">
       <div class="mark">${I.check}</div>
       <h2>Link enviado por ${ch.t}</h2>
       <p>O cliente recebeu o resumo do pedido <strong>#PV-24817</strong> em ${ch.d} e pode concluir o pagamento pelo próprio celular. Você acompanha a confirmação aqui.</p>
@@ -833,7 +926,7 @@ function renderCart(){
   const shipLabel = SHIPPING.find(s => s.id === state.shipping).t;
   document.getElementById('totals').innerHTML = `
     <div class="trow"><span>Subtotal</span><span class="v">${BRL(st)}</span></div>
-    <div class="trow ${fr === 0 ? 'free' : ''}"><span>${shipLabel}</span><span class="v">${fr ? BRL(fr) : 'Grátis'}</span></div>
+    <div class="trow ${itemCount() > 0 && fr === 0 ? 'free' : ''}"><span>${shipLabel}</span><span class="v">${itemCount() === 0 ? '—' : (fr ? BRL(fr) : 'Grátis')}</span></div>
     ${de ? `<div class="trow free"><span>Desconto 5%</span><span class="v">−${BRL(de)}</span></div>` : ''}
     <div class="grand"><span class="l">Total</span><span class="v">${money(total())}</span></div>
     <div class="cta">
@@ -947,5 +1040,7 @@ setInterval(() => {
 
 render();
 </script>
-</body>
-</html>
+
+
+
+</body></html>

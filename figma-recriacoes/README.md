@@ -55,6 +55,19 @@ sem build nem dependências.
 - **color.html** — alterna entre ver os dois modos, só light ou só dark.
 - **typography.html** e **border.html** — tabelas estáticas.
 
+## Requisito: o conteúdo precisa estar no HTML
+
+Todo arquivo deve mostrar conteúdo real mesmo com JavaScript desligado — visualizadores de
+arquivo embutidos (como o do app do Claude) não executam scripts, e uma página que se monta
+via JS aparece como uma casca vazia.
+
+A regra aqui é: o HTML carrega o conteúdo; o JS só adiciona interação. Para conferir antes de
+entregar:
+
+```sh
+chromium --headless --disable-javascript --screenshot=check.png file://$PWD/arquivo.html
+```
+
 ## Fidelidade
 
 Os tokens de design (cores, raios, espaçamentos, sombras de foco, opacidades, tamanhos de fonte
