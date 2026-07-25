@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Typography — design tokens (recriação)</title>
+<style>
+  :root{
+    /* Font families */
+    --font-sans:'Anthropic Sans','Styrene B',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+
+    /* Weight */
+    --font-weight-normal:400;
+    --font-weight-medium:500;
+    --font-weight-semibold:600;
+    --font-weight-bold:700;
+
+    /* Text / Size */
+    --font-text-xs-size:12px;
+    --font-text-sm-size:14px;
+    --font-text-md-size:16px;
+    --font-text-lg-size:18px;
+
+    /* Text / Leading */
+    --font-text-xs-line-height:16.8px;
+    --font-text-sm-line-height:19.6px;
+    --font-text-md-line-height:22.4px;
+    --font-text-lg-line-height:25px;
+
+    /* Heading / Size */
+    --font-heading-xs-size:12px;
+    --font-heading-sm-size:14px;
+    --font-heading-md-size:16px;
+    --font-heading-lg-size:20px;
+    --font-heading-xl-size:24px;
+    --font-heading-2xl-size:28px;
+    --font-heading-3xl-size:36px;
+
+    /* Heading / Leading */
+    --font-heading-xs-line-height:16.8px;
+    --font-heading-sm-line-height:19.6px;
+    --font-heading-md-line-height:22.4px;
+    --font-heading-lg-line-height:25px;
+    --font-heading-xl-line-height:30px;
+    --font-heading-2xl-line-height:30.8px;
+    --font-heading-3xl-line-height:36px;
+
+    --text-primary:#141413;
+    --text-tertiary:#73726c;
+    --border-primary:rgba(31,30,29,0.4);
+    --border-secondary:rgba(31,30,29,0.3);
+    --info:#3266ad;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;padding:64px 24px 120px;background:#eceae4;
+    font-family:var(--font-sans);color:var(--text-primary);
+    display:flex;justify-content:center;
+  }
+  .sheet{
+    width:min(1500px,100%);background:#fff;
+    border:.5px solid var(--border-primary);border-radius:48px;
+    padding:clamp(32px,5vw,96px);
+  }
+  .masthead{display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start;margin:0 0 72px}
+  h1{font-size:clamp(40px,7vw,72px);font-weight:600;letter-spacing:-.02em;margin:0;line-height:1}
+  .fontnote{max-width:44ch;font-size:12px;line-height:1.5;color:#4d4c48;margin:8px 0 0}
+  .fontnote b{color:var(--info)}
+
+  .cols{display:flex;flex-wrap:wrap;gap:56px 64px;align-items:flex-start}
+  .col{flex:1 1 300px;min-width:280px}
+  .col h2{font-size:20px;font-weight:500;margin:0 0 32px}
+
+  .item{display:flex;align-items:center;gap:16px;margin-bottom:32px}
+  .demo{
+    width:112px;flex:0 0 112px;height:96px;
+    border:.5px solid var(--border-secondary);border-radius:8px;
+    display:flex;align-items:center;justify-content:center;overflow:hidden;
+  }
+  /* Leading: régua mostrando a altura da linha */
+  .demo.leading{position:relative}
+  .demo.leading .guide{
+    position:absolute;left:12px;right:12px;
+    border-top:1px solid rgba(70,130,213,.55);
+    border-bottom:1px solid rgba(70,130,213,.55);
+    background:rgba(70,130,213,.07);
+  }
+  .demo.leading span{position:relative;z-index:1}
+
+  .meta{display:flex;flex-direction:column;gap:4px;min-width:0}
+  .meta .label{font-size:15px;font-weight:600;line-height:1.3}
+  .meta .var{font-family:var(--font-mono);font-size:12px;color:var(--text-tertiary);line-height:1.4;word-break:break-all}
+  .meta .val{font-family:var(--font-mono);font-size:11px;color:var(--text-tertiary);opacity:.75}
+
+  /* Font family cards */
+  .fontcard{margin-bottom:40px}
+  .fontcard .box{
+    width:100%;max-width:340px;height:200px;border:.5px solid var(--border-secondary);border-radius:8px;
+    display:flex;align-items:center;justify-content:center;font-size:64px;line-height:1;
+  }
+  .fontcard .box.mono{font-family:var(--font-mono)}
+  .fontcard .meta{margin-top:16px}
+
+  /* Styles column */
+  .style-item{margin-bottom:32px}
+  .style-item .sample{margin:0 0 8px}
+  .style-item .var{font-family:var(--font-mono);font-size:12px;color:var(--text-tertiary)}
+
+  .note{
+    margin-top:72px;padding:16px 20px;border-radius:12px;background:#f7f6f2;
+    border:.5px solid rgba(31,30,29,.15);font-size:13px;line-height:1.6;color:#4d4c48;
+  }
+  .note strong{color:var(--text-primary)}
+  .note code{font-family:var(--font-mono);font-size:12px}
+  .note ul{margin:8px 0 0;padding-left:20px}
+</style>
+</head>
+<body>
+<div class="sheet">
+  <div class="masthead">
+    <h1>Typography</h1>
+    <p class="fontnote">
+      <b>Note on fonts:</b> The Figma Community File uses Anthropic Sans and Anthropic Serif.
+      When your app runs inside Claude, the host client provides Anthropic Sans at runtime
+      through style variables.
+    </p>
+  </div>
+
+  <div class="cols">
+
+    <!-- Font -->
+    <section class="col">
+      <h2>Font</h2>
+      <div class="fontcard">
+        <div class="box">Aa</div>
+        <div class="meta">
+          <span class="label">Anthropic Sans</span>
+          <span class="var">font-sans</span>
+        </div>
+      </div>
+      <div class="fontcard">
+        <div class="box mono">Aa</div>
+        <div class="meta">
+          <span class="label">JetBrains Mono</span>
+          <span class="var">font-mono</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Weight -->
+    <section class="col">
+      <h2>Weight</h2>
+      <div class="item">
+        <div class="demo"><span style="font-weight:var(--font-weight-normal);font-size:18px">Normal</span></div>
+        <div class="meta"><span class="label">400</span><span class="var">font-weight-normal</span></div>
+      </div>
+      <div class="item">
+        <div class="demo"><span style="font-weight:var(--font-weight-medium);font-size:18px">Medium</span></div>
+        <div class="meta"><span class="label">500</span><span class="var">font-weight-medium</span></div>
+      </div>
+      <div class="item">
+        <div class="demo"><span style="font-weight:var(--font-weight-semibold);font-size:18px">Semibold</span></div>
+        <div class="meta"><span class="label">600</span><span class="var">font-weight-semibold</span></div>
+      </div>
+      <div class="item">
+        <div class="demo"><span style="font-weight:var(--font-weight-bold);font-size:18px">Bold</span></div>
+        <div class="meta"><span class="label">700</span><span class="var">font-weight-bold</span></div>
+      </div>
+    </section>
+
+    <!-- Text / Size -->
+    <section class="col">
+      <h2>Text / Size</h2>
+      <div class="item">
+        <div class="demo"><span style="font-size:var(--font-text-xs-size)">XS</span></div>
+        <div class="meta"><span class="label">Text XS</span><span class="var">font-text-xs-size</span><span class="val">12px</span></div>
+      </div>
+      <div class="item">
+        <div class="demo"><span style="font-size:var(--font-text-sm-size)">SM</span></div>
+        <div class="meta"><span class="label">Text small</span><span class="var">font-text-sm-size</span><span class="val">14px</span></div>
+      </div>
+      <div class="item">
+        <div class="demo"><span style="font-size:var(--font-text-md-size)">MD</span></div>
+        <div class="meta"><span class="label">Text medium</span><span class="var">font-text-md-size</span><span class="val">16px</span></div>
+      </div>
+      <div class="item">
+        <div class="demo"><span style="font-size:var(--font-text-lg-size)">LG</span></div>
+        <div class="meta"><span class="label">Text large</span><span class="var">font-text-lg-size</span><span class="val">18px</span></div>
+      </div>
+    </section>
+
+    <!-- Text / Leading -->
+    <section class="col">
+      <h2>Text / Leading</h2>
+      <div class="item">
+        <div class="demo leading">
+          <span class="guide" style="height:var(--font-text-xs-line-height)"></span>
+          <span style="font-size:var(--font-text-xs-size);line-height:var(--font-text-xs-line-height)">Text</span>
+        </div>
+        <div class="meta"><span class="label">Text XS</span><span class="var">font-text-xs-line-height</span><span class="val">16.8px</span></div>
+      </div>
+      <div class="item">
+        <div class="demo leading">
+          <span class="guide" style="height:var(--font-text-sm-line-height)"></span>
+          <span style="font-size:var(--font-text-sm-size);line-height:var(--font-text-sm-line-height)">Text</span>
+        </div>
+        <div class="meta"><span class="label">Text small</span><span class="var">font-text-sm-line-height</span><span class="val">19.6px</span></div>
+      </div>
+      <div class="item">
+        <div class="demo leading">
+          <span class="guide" style="height:var(--font-text-md-line-height)"></span>
+          <span style="font-size:var(--font-text-md-size);line-height:var(--font-text-md-line-height)">Text</span>
+        </div>
+        <div class="meta"><span class="label">Text medium</span><span class="var">font-text-md-line-height</span><span class="val">22.4px</span></div>
+      </div>
+      <div class="item">
+        <div class="demo leading">
+          <span class="guide" style="height:var(--font-text-lg-line-height)"></span>
+          <span style="font-size:var(--font-text-lg-size);line-height:var(--font-text-lg-line-height)">Text</span>
+        </div>
+        <div class="meta"><span class="label">Text large</span><span class="var">font-text-lg-line-height</span><span class="val">25px</span></div>
+      </div>
+    </section>
+
+    <!-- Heading / Size -->
+    <section class="col">
+      <h2>Heading / Size</h2>
+      <div class="item">
+        <div class="demo"><span style="font-size:var(--font-heading-xs-size);font-weight:600">XS</span></div>
+        <div class="meta"><span class="label">Heading XS</span><span class="var">font-heading-xs-size</span><span class="val">12px</span></div>
+      </div>
+      <div class="item">
+        <div class="demo"><span style="font-size:var(--font-heading-sm-size);font-weight:600">SM</span></div>
+        <div class="meta"><span class="label">Heading small</span><span class="var">font-heading-sm-size</span><span class="val">14px</span></div>
+      </div>
+      <div class="item">
+        <div class="demo"><span style="font-size:var(--font-heading-md-size);font-weight:600">MD</span></div>
+        <div class="meta"><span class="label">Heading medium</span><span class="var">font-heading-md-size</span><span class="val">16px</span></div>
+      </div>
+      <div class="item">
+        <div class="demo"><span style="font-size:var(--font-heading-lg-size);font-weight:600">LG</span></div>
+        <div class="meta"><span class="label">Heading large</span><span class="var">font-heading-lg-size</span><span class="val">20px</span></div>
+      </div>
+      <div class="item">
+        <div class="demo"><span style="font-size:var(--font-heading-xl-size);font-weight:600">XL</span></div>
+        <div class="meta"><span class="label">Heading XL</span><span class="var">font-heading-xl-size</span><span class="val">24px</span></div>
+      </div>
+      <div class="item">
+        <div class="demo"><span style="font-size:var(--font-heading-2xl-size);font-weight:600">2XL</span></div>
+        <div class="meta"><span class="label">Heading 2XL</span><span class="var">font-heading-2xl-size</span><span class="val">28px</span></div>
+      </div>
+      <div class="item">
+        <div class="demo"><span style="font-size:var(--font-heading-3xl-size);font-weight:600">3XL</span></div>
+        <div class="meta"><span class="label">Heading 3XL</span><span class="var">font-heading-3xl-size</span><span class="val">36px</span></div>
+      </div>
+    </section>
+
+    <!-- Heading / Leading -->
+    <section class="col">
+      <h2>Heading / Leading</h2>
+      <div class="item">
+        <div class="demo leading">
+          <span class="guide" style="height:var(--font-heading-xs-line-height)"></span>
+          <span style="font-size:var(--font-heading-xs-size);line-height:var(--font-heading-xs-line-height);font-weight:600">XS</span>
+        </div>
+        <div class="meta"><span class="label">Heading XS</span><span class="var">font-heading-xs-line-height</span><span class="val">16.8px</span></div>
+      </div>
+      <div class="item">
+        <div class="demo leading">
+          <span class="guide" style="height:var(--font-heading-sm-line-height)"></span>
+          <span style="font-size:var(--font-heading-sm-size);line-height:var(--font-heading-sm-line-height);font-weight:600">SM</span>
+        </div>
+        <div class="meta"><span class="label">Heading small</span><span class="var">font-heading-sm-line-height</span><span class="val">19.6px</span></div>
+      </div>
+      <div class="item">
+        <div class="demo leading">
+          <span class="guide" style="height:var(--font-heading-md-line-height)"></span>
+          <span style="font-size:var(--font-heading-md-size);line-height:var(--font-heading-md-line-height);font-weight:600">MD</span>
+        </div>
+        <div class="meta"><span class="label">Heading medium</span><span class="var">font-heading-md-line-height</span><span class="val">22.4px</span></div>
+      </div>
+      <div class="item">
+        <div class="demo leading">
+          <span class="guide" style="height:var(--font-heading-lg-line-height)"></span>
+          <span style="font-size:var(--font-heading-lg-size);line-height:var(--font-heading-lg-line-height);font-weight:600">LG</span>
+        </div>
+        <div class="meta"><span class="label">Heading large</span><span class="var">font-heading-lg-line-height</span><span class="val">25px</span></div>
+      </div>
+      <div class="item">
+        <div class="demo leading">
+          <span class="guide" style="height:var(--font-heading-xl-line-height)"></span>
+          <span style="font-size:var(--font-heading-xl-size);line-height:var(--font-heading-xl-line-height);font-weight:600">XL</span>
+        </div>
+        <div class="meta"><span class="label">Heading XL</span><span class="var">font-heading-xl-line-height</span><span class="val">30px</span></div>
+      </div>
+      <div class="item">
+        <div class="demo leading">
+          <span class="guide" style="height:var(--font-heading-2xl-line-height)"></span>
+          <span style="font-size:var(--font-heading-2xl-size);line-height:var(--font-heading-2xl-line-height);font-weight:600">2XL</span>
+        </div>
+        <div class="meta"><span class="label">Heading 2XL</span><span class="var">font-heading-2xl-line-height</span><span class="val">30.8px</span></div>
+      </div>
+      <div class="item">
+        <div class="demo leading">
+          <span class="guide" style="height:var(--font-heading-3xl-line-height)"></span>
+          <span style="font-size:var(--font-heading-3xl-size);line-height:var(--font-heading-3xl-line-height);font-weight:600">3XL</span>
+        </div>
+        <div class="meta"><span class="label">Heading 3XL</span><span class="var">font-heading-3xl-line-height</span><span class="val">36px</span></div>
+      </div>
+    </section>
+
+    <!-- Styles -->
+    <section class="col">
+      <h2>Styles</h2>
+      <div class="style-item">
+        <p class="sample" style="font-size:var(--font-heading-3xl-size);line-height:var(--font-heading-3xl-line-height);font-weight:var(--font-weight-semibold)">Heading large</p>
+        <span class="var">font-style-heading-large</span>
+      </div>
+      <div class="style-item">
+        <p class="sample" style="font-size:var(--font-heading-lg-size);line-height:var(--font-heading-lg-line-height);font-weight:var(--font-weight-semibold)">Heading</p>
+        <span class="var">font-style-heading</span>
+      </div>
+      <div class="style-item">
+        <p class="sample" style="font-size:var(--font-text-md-size);line-height:var(--font-text-md-line-height);font-weight:var(--font-weight-normal)">Body</p>
+        <span class="var">font-style-body</span>
+      </div>
+      <div class="style-item">
+        <p class="sample" style="font-size:var(--font-heading-md-size);line-height:var(--font-heading-md-line-height);font-weight:var(--font-weight-semibold)">Body emphasized</p>
+        <span class="var">font-style-body-emphasized</span>
+      </div>
+      <div class="style-item">
+        <p class="sample" style="font-size:var(--font-text-sm-size);line-height:var(--font-heading-sm-line-height);font-weight:var(--font-weight-normal)">Body small</p>
+        <span class="var">font-style-body-small</span>
+      </div>
+      <div class="style-item">
+        <p class="sample" style="font-size:var(--font-heading-sm-size);line-height:var(--font-heading-sm-line-height);font-weight:var(--font-weight-semibold)">Body small emphasized</p>
+        <span class="var">font-style-body-small-emphasized</span>
+      </div>
+      <div class="style-item">
+        <p class="sample" style="font-size:var(--font-text-xs-size);line-height:var(--font-text-xs-line-height);font-weight:var(--font-weight-normal)">Caption regular</p>
+        <span class="var">font-style-caption</span>
+      </div>
+      <div class="style-item">
+        <p class="sample" style="font-size:var(--font-heading-xs-size);line-height:var(--font-heading-xs-line-height);font-weight:var(--font-weight-semibold)">Caption emphasized</p>
+        <span class="var">font-style-caption-emphasized</span>
+      </div>
+    </section>
+
+  </div>
+
+  <p class="note">
+    <strong>Notas de fidelidade.</strong>
+    Os valores em px vêm das variáveis reais do arquivo; a composição de cada estilo
+    (peso + size + line-height) veio das definições de style do Figma.
+    Três divergências no arquivo original foram corrigidas aqui para o material não induzir a erro:
+    <ul>
+      <li>A coluna <em>Heading / Leading</em> repetia os nomes <code>…-size</code> em vez de
+          <code>…-line-height</code>; usei os nomes de line-height.</li>
+      <li><code>Heading XL</code> aparecia como <code>ont-heading-xl-size</code>, sem o “f”.</li>
+      <li>Os dois primeiros estilos usavam ambos <code>font-style-heading</code>; o primeiro está
+          aqui como <code>font-style-heading-large</code>.</li>
+    </ul>
+    As fontes Anthropic Sans e Anthropic Serif não são públicas — o CSS as declara primeiro e cai
+    para um stack equivalente do sistema.
+  </p>
+</div>
+</body>
+</html>

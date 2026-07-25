@@ -1,18 +1,27 @@
 # Recriações do Figma — MCP Apps for Claude
 
-Telas do arquivo Figma **"MCP Apps for Claude (Community)"** (`wfiXKYbSeeM1kFwLwlIRiI`)
+Telas e páginas de tokens do arquivo Figma **"MCP Apps for Claude (Community)"**
 recriadas em HTML/CSS/JS interativo. Cada arquivo é autocontido — abra direto no navegador,
 sem build nem dependências.
 
 ## Arquivos
 
+### Telas
+
 | Arquivo | Página no Figma | Node |
 |---|---|---|
 | `inline-card.html` | App → Inline card | `67:3145` |
 | `fullscreen.html` | App → Fullscreen | `67:3156` |
-| `forms.html` | Desktop web components → Forms (Controls) | `26:1233` |
 | `inline-carousel-skeleton.html` | Inline carousel (estado de carregamento) | `467:31022` |
-| `border.html` | Border (design tokens) | `467:21770` |
+
+### Design tokens
+
+| Arquivo | Página no Figma | Node |
+|---|---|---|
+| `color.html` | 🖌️ Color | `467:20292` |
+| `typography.html` | 🔠 Typography | `7:19` |
+| `border.html` | Border | `467:21770` |
+| `forms.html` | Desktop web components → Forms (Controls) | `26:1233` |
 
 ## O que é interativo
 
@@ -23,21 +32,36 @@ sem build nem dependências.
 - **forms.html** — todos os controles funcionam de verdade (checkbox, radio, switch, inputs),
   com os estados `disabled` reais e os anéis de foco exatos do design (Tab para ver).
 - **inline-carousel-skeleton.html** — seta "next" rola o carrossel um card por vez.
-- **border.html** — tabela estática de tokens.
+- **color.html** — alterna entre ver os dois modos, só light ou só dark.
+- **typography.html** e **border.html** — tabelas estáticas.
 
 ## Fidelidade
 
-Os tokens de design (cores, raios, espaçamentos, sombras de foco, opacidades) foram extraídos
-do próprio arquivo Figma via MCP e estão declarados como CSS custom properties no topo de cada
-arquivo.
+Os tokens de design (cores, raios, espaçamentos, sombras de foco, opacidades, tamanhos de fonte
+e line-heights) foram extraídos do próprio arquivo Figma via MCP e estão declarados como CSS
+custom properties no topo de cada arquivo.
 
 Duas aproximações conscientes, por limitação do ambiente:
 
 1. **Ícones** — os SVGs exportados pelo Figma expiram em ~7 dias e a rede do ambiente bloqueia
    downloads de `figma.com`. Os ícones foram redesenhados inline no mesmo estilo (traço fino,
    20×20).
-2. **Fontes** — as fontes Anthropic (Styrene / Tiempos) não são públicas. O CSS as declara
-   primeiro e cai para um stack equivalente (sans do sistema / serifada tipo Georgia).
+2. **Fontes** — as fontes Anthropic (Anthropic Sans / Serif, Styrene, Tiempos) não são públicas.
+   O CSS as declara primeiro e cai para um stack equivalente do sistema.
+
+## Divergências encontradas no arquivo original
+
+O arquivo Figma tem algumas inconsistências. Onde reproduzi-las produziria material de
+referência incorreto, corrigi e documentei:
+
+- **`color-text-disabled`** — o swatch está vinculado por engano a `text/inverse`. Prevaleceram
+  os números R/G/B mostrados na linha (o primário a 50%).
+- **`Background / Accent`** — os rótulos R/G/B não são atualizados por modo (mostram o mesmo
+  valor em light e dark). Prevaleceu a variável vinculada ao swatch.
+- **Coluna `Heading / Leading`** — repetia os nomes `…-size` em vez de `…-line-height`.
+- **`Heading XL`** — aparecia como `ont-heading-xl-size`, sem o "f".
+- **Estilos** — os dois primeiros usavam ambos `font-style-heading`; o primeiro virou
+  `font-style-heading-large`.
 
 ## Ressalvas
 
@@ -46,13 +70,10 @@ Duas aproximações conscientes, por limitação do ambiente:
   O skeleton foi construído seguindo as dimensões reais dos cards (220×280, gap 12) e o mesmo
   padrão de shimmer usado nos outros skeletons do arquivo.
 - **`border.html`** — os nomes e a ordem dos tokens vêm da página original, mas os valores em px
-  foram derivados do uso real nos componentes, não relidos da tabela de variáveis (a conta
-  atingiu o limite mensal da API do Figma no plano Starter).
+  foram derivados do uso real nos componentes, não relidos da tabela de variáveis.
 
 ## Pendente
 
-Três páginas ainda não recriadas, bloqueadas pelo mesmo limite de API:
-
-- `467:20292` — não inspecionada
-- `7:19` — não inspecionada
-- `455:241691` — seção "Examples" (mockups mobile, tema claro e escuro)
+- Seção **"Examples"** (`455:241691`) — mockups mobile em tema claro e escuro.
+- Carrossel **preenchido** e sua versão em tema escuro / mobile (`467:31022`).
+- Variante **"Meta"** do App header e o App skeleton Fullscreen como componentes isolados.
