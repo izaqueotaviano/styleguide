@@ -297,13 +297,15 @@ code{font-family:var(--font-mono);font-size:.86em}
   border-radius:var(--border-radius-full);width:36px;height:20px;
 }
 .switch.small{width:28px;height:16px}
-.switch::after{content:'';position:absolute;top:2px;left:2px;background:#fff;
-  border:var(--border-width-regular) solid var(--color-border-primary);border-radius:var(--border-radius-full);
-  width:16px;height:16px;transition:left .15s ease}
-.switch.small::after{width:12px;height:12px}
+/* o nó é ancorado nas quatro bordas: fica centrado na altura e com folga igual
+   dos dois lados, independentemente da espessura da borda do trilho */
+.switch::after{
+  content:'';position:absolute;top:2px;bottom:2px;left:2px;width:auto;aspect-ratio:1;
+  background:#fff;border:var(--border-width-regular) solid var(--color-border-primary);
+  border-radius:var(--border-radius-full);
+}
 .switch:checked{background:var(--color-border-info);border-color:var(--color-border-info)}
-.switch:checked::after{left:18px;border-color:var(--color-border-info)}
-.switch.small:checked::after{left:14px}
+.switch:checked::after{left:auto;right:2px;border-color:var(--color-border-info)}
 .switch:disabled{opacity:.5;cursor:default}
 .switch:focus-visible{outline:none;box-shadow:0 0 0 2px var(--color-background-primary),0 0 0 3.5px var(--color-ring-info)}
 
