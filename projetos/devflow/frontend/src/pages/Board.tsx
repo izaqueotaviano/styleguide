@@ -2,7 +2,7 @@ import { FormEvent, useCallback, useEffect, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 
 import { api, listAll } from "../api/client";
-import { Section, Task, TaskStatus } from "../api/types";
+import { PRIORITY_LABELS, Section, Task, TaskStatus, TYPE_LABELS } from "../api/types";
 import Avatar from "../components/Avatar";
 import { projectColor } from "../components/Sidebar";
 import TaskCard, { formatDate, PRIORITY_COLORS } from "../components/TaskCard";
@@ -17,7 +17,7 @@ function sortTasks(list: Task[]): Task[] {
 
 export default function Board() {
   const { projectId } = useParams<{ projectId: string }>();
-  const { projects } = useWorkspace();
+  const { projects, members } = useWorkspace();
   const project = projects.find((item) => item.id === projectId);
   const [statuses, setStatuses] = useState<TaskStatus[]>([]);
   const [sections, setSections] = useState<Section[]>([]);
@@ -27,6 +27,9 @@ export default function Board() {
   const [newTitle, setNewTitle] = useState("");
   const [newSection, setNewSection] = useState("");
   const [addingSection, setAddingSection] = useState(false);
+  const [filterAssignee, setFilterAssignee] = useState("all");
+  const [filterType, setFilterType] = useState("all");
+  const [filterPriority, setFilterPriority] = useState("all");
   const [searchParams, setSearchParams] = useSearchParams();
   const openTaskId = searchParams.get("task");
 
@@ -107,7 +110,19 @@ export default function Board() {
 
   if (!project) return <div className="screen-center">Projeto não encontrado.</div>;
 
-  const topLevel = tasks.filter((task) => task.parent === null);
+  const topLevel = tasks.filter((task) => {
+    if (task.parent !== null) return false;
+    if (filterAssignee === "none" && task.assignee !== null) return false;
+    if (
+      filterAssignee !== "all" &&
+      filterAssignee !== "none" &&
+      String(task.assignee?.id ?? "") !== filterAssignee
+    )
+      return false;
+    if (filterType !== "all" && task.type !== filterType) return false;
+    if (filterPriority !== "all" && task.priority !== filterPriority) return false;
+    return true;
+  });
 
   function renderRow(task: Task) {
     return (
@@ -161,6 +176,33 @@ export default function Board() {
           <button className={view === "list" ? "active" : ""} onClick={() => setView("list")}>
             Lista
           </button>
+        </div>
+        <div className="filter-bar">
+          <select value={filterAssignee} onChange={(e) => setFilterAssignee(e.target.value)}>
+            <option value="all">Responsável: todos</option>
+            <option value="none">Sem responsável</option>
+            {members.map((member) => (
+              <option key={member.user.id} value={String(member.user.id)}>
+                {member.user.username}
+              </option>
+            ))}
+          </select>
+          <select value={filterType} onChange={(e) => setFilterType(e.target.value)}>
+            <option value="all">Tipo: todos</option>
+            {Object.entries(TYPE_LABELS).map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+          <select value={filterPriority} onChange={(e) => setFilterPriority(e.target.value)}>
+            <option value="all">Prioridade: todas</option>
+            {Object.entries(PRIORITY_LABELS).map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
