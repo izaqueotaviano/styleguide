@@ -38,7 +38,21 @@ devflow/
 | Serializers | `serializers.py` | Entrada/saída da API |
 | Views | `views.py` | Autorização + orquestração fina (sem lógica de negócio) |
 
-## Rodando localmente
+## Rodando com Docker (recomendado)
+
+```bash
+docker compose up
+```
+
+Sobe o PostgreSQL, aplica as migrations, popula os dados de demonstração e
+inicia a API em `http://localhost:8000`. Logins de demonstração:
+`demo / devflow123` (admin) e `dev / devflow123`.
+
+- **Swagger UI**: http://localhost:8000/api/docs/
+- **Schema OpenAPI**: http://localhost:8000/api/schema/
+- **Django Admin**: http://localhost:8000/admin/
+
+## Rodando localmente (sem Docker)
 
 ```bash
 python -m venv .venv && source .venv/bin/activate
@@ -46,6 +60,7 @@ pip install -r requirements.txt
 cp .env.example .env            # ajuste o Postgres se necessário
 python manage.py migrate
 python manage.py createsuperuser
+python manage.py seed_demo        # opcional: dados de demonstração
 python manage.py runserver
 ```
 
@@ -54,6 +69,10 @@ Testes (usam SQLite em memória, não precisam de Postgres):
 ```bash
 python manage.py test --settings=config.settings.test
 ```
+
+O CI (GitHub Actions, `.github/workflows/devflow-tests.yml` na raiz do
+repositório) roda `check`, `makemigrations --check` e a suíte de testes a
+cada push/PR que tocar em `projetos/devflow/`.
 
 ## API (v1)
 
