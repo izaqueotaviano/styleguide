@@ -10,6 +10,7 @@ com **Django 5 + Django REST Framework + PostgreSQL**.
 devflow/
 ├── manage.py
 ├── requirements.txt
+├── frontend/                   # SPA React + Vite (board, home, painel de tarefa)
 ├── config/                     # Projeto Django (sem lógica de negócio)
 │   ├── settings/               # base / development / production / test
 │   ├── urls.py                 # Rotas da API v1
@@ -37,6 +38,23 @@ devflow/
 | Services | `services.py` | **Toda a regra de negócio** (transações, side effects) |
 | Serializers | `serializers.py` | Entrada/saída da API |
 | Views | `views.py` | Autorização + orquestração fina (sem lógica de negócio) |
+
+## Frontend (React + Vite)
+
+Interface web no estilo Asana/Linear em `frontend/`: página inicial com
+"Minhas tarefas" e grade de projetos, board Kanban com drag-and-drop,
+list view, painel lateral de detalhes (campos, subtarefas e comentários
+com menções), busca global e login/registro com JWT.
+
+```bash
+cd frontend
+npm install
+npm run dev        # http://localhost:5173 (proxy /api → localhost:8000)
+```
+
+O dev server do Vite faz proxy de `/api` para o backend em
+`localhost:8000`, então basta a API estar rodando (Docker ou local).
+Build de produção: `npm run build` (TypeScript estrito + Vite).
 
 ## Rodando com Docker (recomendado)
 
