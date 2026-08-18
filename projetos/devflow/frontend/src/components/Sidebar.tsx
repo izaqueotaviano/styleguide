@@ -44,6 +44,9 @@ export default function Sidebar() {
         <NavLink to="/my-tasks" className="sidebar-link">
           <span className="sidebar-icon">✓</span> Minhas tarefas
         </NavLink>
+        <NavLink to="/members" className="sidebar-link">
+          <span className="sidebar-icon">◉</span> Membros
+        </NavLink>
       </div>
 
       <div className="sidebar-section">

@@ -21,14 +21,23 @@ export default function TaskCard({
   task,
   onOpen,
   onDragStart,
+  onDropBefore,
 }: {
   task: Task;
   onOpen: () => void;
   onDragStart: (event: React.DragEvent) => void;
+  onDropBefore?: (event: React.DragEvent) => void;
 }) {
   const done = task.completed_at !== null;
   return (
-    <div className="task-card" draggable onDragStart={onDragStart} onClick={onOpen}>
+    <div
+      className="task-card"
+      draggable
+      onDragStart={onDragStart}
+      onClick={onOpen}
+      onDragOver={(e) => e.preventDefault()}
+      onDrop={onDropBefore}
+    >
       <div className={`task-card-title ${done ? "task-done" : ""}`}>
         <span className={`check-circle ${done ? "checked" : ""}`}>✓</span>
         {task.title}

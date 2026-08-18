@@ -42,9 +42,12 @@ devflow/
 ## Frontend (React + Vite)
 
 Interface web no estilo Asana/Linear em `frontend/`: página inicial com
-"Minhas tarefas" e grade de projetos, board Kanban com drag-and-drop,
-list view, painel lateral de detalhes (campos, subtarefas e comentários
-com menções), busca global e login/registro com JWT.
+"Minhas tarefas" e grade de projetos, board Kanban com drag-and-drop
+(incluindo reordenação por posição na coluna), list view agrupada por
+seções, painel lateral de detalhes (campos, seção, subtarefas,
+comentários com menções e aba de atividade), sino de notificações,
+página de membros com convites e papéis, busca global e login/registro
+com JWT.
 
 ```bash
 cd frontend

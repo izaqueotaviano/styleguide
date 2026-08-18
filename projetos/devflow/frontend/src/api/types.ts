@@ -104,3 +104,33 @@ export const PRIORITY_LABELS: Record<Task["priority"], string> = {
   medium: "Média",
   low: "Baixa",
 };
+
+export interface Activity {
+  id: string;
+  task: string;
+  actor: User | null;
+  verb: "created" | "updated" | "status_changed" | "section_changed" | "assigned" | "commented" | "deleted";
+  field: string;
+  old_value: unknown;
+  new_value: unknown;
+  created_at: string;
+}
+
+export interface Notification {
+  id: string;
+  actor: User | null;
+  verb: "task_assigned" | "review_requested" | "mentioned" | "commented";
+  task: string | null;
+  task_key: string | null;
+  task_title: string | null;
+  task_project: string | null;
+  comment: string | null;
+  read_at: string | null;
+  created_at: string;
+}
+
+export const ROLE_LABELS: Record<Membership["role"], string> = {
+  admin: "Admin",
+  member: "Membro",
+  guest: "Convidado",
+};

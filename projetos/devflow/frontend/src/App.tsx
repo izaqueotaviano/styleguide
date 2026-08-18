@@ -6,6 +6,7 @@ import Layout from "./components/Layout";
 import Board from "./pages/Board";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
+import Members from "./pages/Members";
 import MyTasks from "./pages/MyTasks";
 
 function RequireAuth({ children }: { children: ReactNode }) {
@@ -30,6 +31,7 @@ export default function App() {
           >
             <Route index element={<Home />} />
             <Route path="my-tasks" element={<MyTasks />} />
+            <Route path="members" element={<Members />} />
             <Route path="projects/:projectId" element={<Board />} />
           </Route>
         </Routes>

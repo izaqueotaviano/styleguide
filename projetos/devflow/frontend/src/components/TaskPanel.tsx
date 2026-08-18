@@ -2,8 +2,10 @@ import { FormEvent, useEffect, useState } from "react";
 
 import { api, listAll } from "../api/client";
 import {
+  Activity,
   Comment,
   PRIORITY_LABELS,
+  Section,
   Task,
   TaskStatus,
   TYPE_LABELS,
@@ -12,17 +14,50 @@ import { useWorkspace } from "./WorkspaceContext";
 import Avatar from "./Avatar";
 import { formatDate } from "./TaskCard";
 
+const ACTIVITY_VERBS: Record<Activity["verb"], string> = {
+  created: "criou a tarefa",
+  updated: "atualizou",
+  status_changed: "alterou o status",
+  section_changed: "moveu de seção",
+  assigned: "alterou o responsável",
+  commented: "comentou",
+  deleted: "excluiu a tarefa",
+};
+
+const FIELD_LABELS: Record<string, string> = {
+  title: "o título",
+  description: "a descrição",
+  type: "o tipo",
+  priority: "a prioridade",
+  estimate: "a estimativa",
+  due_date: "a entrega",
+  reviewer: "o revisor",
+  parent: "a tarefa pai",
+};
+
+function valueLabel(value: unknown): string {
+  if (value === null || value === undefined || value === "") return "—";
+  if (typeof value === "object") {
+    const record = value as { label?: string; id?: string };
+    return record.label ?? String(record.id ?? "—");
+  }
+  return String(value);
+}
+
 interface TaskPanelProps {
   taskId: string;
   statuses: TaskStatus[];
+  sections: Section[];
   onClose: () => void;
   onChanged: (task: Task) => void;
 }
 
-export default function TaskPanel({ taskId, statuses, onClose, onChanged }: TaskPanelProps) {
+export default function TaskPanel({ taskId, statuses, sections, onClose, onChanged }: TaskPanelProps) {
   const { members } = useWorkspace();
   const [task, setTask] = useState<Task | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [tab, setTab] = useState<"comments" | "activity">("comments");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [newSubtask, setNewSubtask] = useState("");
@@ -30,6 +65,7 @@ export default function TaskPanel({ taskId, statuses, onClose, onChanged }: Task
 
   useEffect(() => {
     setTask(null);
+    setTab("comments");
     api.get<Task>(`/tasks/${taskId}/`).then((data) => {
       setTask(data);
       setTitle(data.title);
@@ -37,6 +73,12 @@ export default function TaskPanel({ taskId, statuses, onClose, onChanged }: Task
     });
     listAll<Comment>(`/comments/?task=${taskId}`).then(setComments);
   }, [taskId]);
+
+  useEffect(() => {
+    if (tab === "activity") {
+      listAll<Activity>(`/activities/?task=${taskId}`).then(setActivities);
+    }
+  }, [tab, taskId]);
 
   if (!task) {
     return (
@@ -48,8 +90,7 @@ export default function TaskPanel({ taskId, statuses, onClose, onChanged }: Task
 
   async function patch(changes: Record<string, unknown>) {
     const updated = await api.patch<Task>(`/tasks/${task!.id}/`, changes);
-    const detail = { ...updated, subtasks: task!.subtasks };
-    setTask(detail);
+    setTask({ ...updated, subtasks: task!.subtasks });
     onChanged(updated);
   }
 
@@ -151,6 +192,19 @@ export default function TaskPanel({ taskId, statuses, onClose, onChanged }: Task
           ))}
         </select>
 
+        <label>Seção</label>
+        <select
+          value={task.section?.id ?? ""}
+          onChange={(e) => patch({ section: e.target.value || null })}
+        >
+          <option value="">Sem seção</option>
+          {sections.map((section) => (
+            <option key={section.id} value={section.id}>
+              {section.name}
+            </option>
+          ))}
+        </select>
+
         <label>Prioridade</label>
         <select value={task.priority} onChange={(e) => patch({ priority: e.target.value })}>
           {Object.entries(PRIORITY_LABELS).map(([value, label]) => (
@@ -213,31 +267,71 @@ export default function TaskPanel({ taskId, statuses, onClose, onChanged }: Task
       )}
 
       <div className="panel-section">
-        <div className="panel-section-title">Comentários</div>
-        {comments.map((comment) => (
-          <div key={comment.id} className="comment">
-            <Avatar user={comment.author} size={26} />
-            <div>
-              <div className="comment-meta">
-                <strong>{comment.author?.username ?? "—"}</strong>
-                <span className="muted">
-                  {new Date(comment.created_at).toLocaleDateString("pt-BR")}
+        <div className="panel-tabs">
+          <button className={tab === "comments" ? "active" : ""} onClick={() => setTab("comments")}>
+            Comentários
+          </button>
+          <button className={tab === "activity" ? "active" : ""} onClick={() => setTab("activity")}>
+            Atividade
+          </button>
+        </div>
+
+        {tab === "comments" ? (
+          <>
+            {comments.map((comment) => (
+              <div key={comment.id} className="comment">
+                <Avatar user={comment.author} size={26} />
+                <div>
+                  <div className="comment-meta">
+                    <strong>{comment.author?.username ?? "—"}</strong>
+                    <span className="muted">
+                      {new Date(comment.created_at).toLocaleDateString("pt-BR")}
+                    </span>
+                  </div>
+                  <div className="comment-body">{comment.body}</div>
+                </div>
+              </div>
+            ))}
+            <form onSubmit={addComment} className="comment-form">
+              <input
+                placeholder="Adicionar um comentário (use @usuario para mencionar)"
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+              />
+              <button className="btn btn-primary" disabled={!newComment.trim()}>
+                Comentar
+              </button>
+            </form>
+          </>
+        ) : (
+          <div className="activity-list">
+            {activities.map((activity) => (
+              <div key={activity.id} className="activity-row">
+                <Avatar user={activity.actor} size={22} />
+                <span className="activity-text">
+                  <strong>{activity.actor?.username ?? "Sistema"}</strong>{" "}
+                  {ACTIVITY_VERBS[activity.verb]}
+                  {activity.verb === "updated" && activity.field && (
+                    <> {FIELD_LABELS[activity.field] ?? activity.field}</>
+                  )}
+                  {(activity.verb === "status_changed" ||
+                    activity.verb === "section_changed" ||
+                    activity.verb === "assigned" ||
+                    activity.verb === "updated") &&
+                    (activity.old_value !== null || activity.new_value !== null) && (
+                      <span className="muted">
+                        {" "}
+                        · {valueLabel(activity.old_value)} → {valueLabel(activity.new_value)}
+                      </span>
+                    )}
+                </span>
+                <span className="muted activity-date">
+                  {new Date(activity.created_at).toLocaleDateString("pt-BR")}
                 </span>
               </div>
-              <div className="comment-body">{comment.body}</div>
-            </div>
+            ))}
           </div>
-        ))}
-        <form onSubmit={addComment} className="comment-form">
-          <input
-            placeholder="Adicionar um comentário (use @usuario para mencionar)"
-            value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
-          />
-          <button className="btn btn-primary" disabled={!newComment.trim()}>
-            Comentar
-          </button>
-        </form>
+        )}
       </div>
 
       {task.due_date && (
