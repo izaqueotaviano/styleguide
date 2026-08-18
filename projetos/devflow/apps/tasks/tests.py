@@ -3,6 +3,7 @@
 Rodar com: python manage.py test --settings=config.settings.test
 """
 from django.core.exceptions import ValidationError
+from django.core.management import call_command
 from django.test import TestCase
 from rest_framework.test import APIClient
 
@@ -11,7 +12,7 @@ from apps.activities.models import Activity
 from apps.notifications.models import Notification
 from apps.projects.services import create_project
 from apps.tasks import services
-from apps.workspaces.models import WorkspaceMembership
+from apps.workspaces.models import Workspace, WorkspaceMembership
 from apps.workspaces.services import add_member, create_workspace
 
 
@@ -178,3 +179,16 @@ class TaskAPIPermissionTestCase(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data["status"]["category"], "completed")
+
+
+class SeedDemoCommandTestCase(TestCase):
+    def test_seed_demo_creates_data_and_is_idempotent(self) -> None:
+        call_command("seed_demo")
+        call_command("seed_demo")  # segunda execução não duplica nada
+        self.assertEqual(Workspace.objects.filter(slug="demo").count(), 1)
+        demo_workspace = Workspace.objects.get(slug="demo")
+        project = demo_workspace.projects.get(key="CORE")
+        self.assertEqual(project.tasks.count(), 5)
+        self.assertTrue(
+            project.tasks.filter(status__name="In Progress").exists()
+        )

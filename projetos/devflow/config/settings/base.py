@@ -23,6 +23,7 @@ INSTALLED_APPS = [
     # Terceiros
     "rest_framework",
     "django_filters",
+    "drf_spectacular",
     # Apps do projeto
     "apps.accounts",
     "apps.workspaces",
@@ -105,6 +106,14 @@ REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "apps.core.pagination.DefaultPagination",
     "PAGE_SIZE": 50,
     "EXCEPTION_HANDLER": "apps.core.exceptions.drf_exception_handler",
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "DevFlow API",
+    "DESCRIPTION": "Gestão de projetos e tarefas para times de desenvolvimento.",
+    "VERSION": "0.1.0",
+    "SERVE_INCLUDE_SCHEMA": False,
 }
 
 SIMPLE_JWT = {
