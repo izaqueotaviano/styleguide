@@ -4,6 +4,7 @@ import { api, listAll } from "../api/client";
 import {
   Activity,
   Comment,
+  Label,
   PRIORITY_LABELS,
   Section,
   Task,
@@ -53,7 +54,7 @@ interface TaskPanelProps {
 }
 
 export default function TaskPanel({ taskId, statuses, sections, onClose, onChanged }: TaskPanelProps) {
-  const { members } = useWorkspace();
+  const { members, workspace, projects } = useWorkspace();
   const [task, setTask] = useState<Task | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -62,6 +63,10 @@ export default function TaskPanel({ taskId, statuses, sections, onClose, onChang
   const [description, setDescription] = useState("");
   const [newSubtask, setNewSubtask] = useState("");
   const [newComment, setNewComment] = useState("");
+  const [estimate, setEstimate] = useState("");
+  const [allLabels, setAllLabels] = useState<Label[]>([]);
+  const [labelsOpen, setLabelsOpen] = useState(false);
+  const [newLabel, setNewLabel] = useState("");
 
   useEffect(() => {
     setTask(null);
@@ -70,9 +75,16 @@ export default function TaskPanel({ taskId, statuses, sections, onClose, onChang
       setTask(data);
       setTitle(data.title);
       setDescription(data.description);
+      setEstimate(data.estimate ?? "");
     });
     listAll<Comment>(`/comments/?task=${taskId}`).then(setComments);
   }, [taskId]);
+
+  useEffect(() => {
+    if (workspace) {
+      listAll<Label>(`/labels/?workspace=${workspace.id}`).then(setAllLabels);
+    }
+  }, [workspace]);
 
   useEffect(() => {
     if (tab === "activity") {
@@ -128,6 +140,28 @@ export default function TaskPanel({ taskId, statuses, sections, onClose, onChang
       ...task!,
       subtasks: (task!.subtasks ?? []).map((item) => (item.id === updated.id ? updated : item)),
     });
+  }
+
+  async function toggleLabel(label: Label) {
+    const current = task!.labels.map((item) => item.id);
+    const next = current.includes(label.id)
+      ? current.filter((id) => id !== label.id)
+      : [...current, label.id];
+    await patch({ labels: next });
+  }
+
+  async function createLabel(event: FormEvent) {
+    event.preventDefault();
+    if (!newLabel.trim() || !workspace) return;
+    const palette = ["#8D84E8", "#4ECBC4", "#F1BD6C", "#AECF55", "#F06A6A", "#5DA283"];
+    const label = await api.post<Label>("/labels/", {
+      workspace: workspace.id,
+      name: newLabel.trim(),
+      color: palette[allLabels.length % palette.length],
+    });
+    setAllLabels([...allLabels, label]);
+    setNewLabel("");
+    await toggleLabel(label);
   }
 
   async function addComment(event: FormEvent) {
@@ -222,6 +256,73 @@ export default function TaskPanel({ taskId, statuses, sections, onClose, onChang
             </option>
           ))}
         </select>
+
+        <label>Estimativa</label>
+        <span className="estimate-wrap">
+          <input
+            type="number"
+            min="0"
+            step="0.5"
+            placeholder="—"
+            value={estimate}
+            onChange={(e) => setEstimate(e.target.value)}
+            onBlur={() =>
+              (estimate || null) !== (task.estimate ?? null) &&
+              patch({ estimate: estimate === "" ? null : estimate })
+            }
+          />
+          <span className="muted">
+            {projects.find((item) => item.id === task.project)?.estimate_unit === "hours"
+              ? "horas"
+              : "pontos"}
+          </span>
+        </span>
+      </div>
+
+      <div className="panel-section">
+        <div className="panel-section-title">Labels</div>
+        <div className="labels-row panel-labels">
+          {task.labels.map((label) => (
+            <button
+              key={label.id}
+              className="label-chip label-chip-btn"
+              style={{ background: `${label.color}26`, color: label.color }}
+              title="Remover label"
+              onClick={() => toggleLabel(label)}
+            >
+              {label.name} ✕
+            </button>
+          ))}
+          <button className="label-add-btn" onClick={() => setLabelsOpen(!labelsOpen)}>
+            + Label
+          </button>
+        </div>
+        {labelsOpen && (
+          <div className="labels-picker">
+            {allLabels.map((label) => {
+              const active = task.labels.some((item) => item.id === label.id);
+              return (
+                <button
+                  key={label.id}
+                  className={`labels-picker-item ${active ? "active" : ""}`}
+                  onClick={() => toggleLabel(label)}
+                >
+                  <span className="project-dot" style={{ background: label.color }} />
+                  {label.name}
+                  {active && <span className="muted"> ✓</span>}
+                </button>
+              );
+            })}
+            <form onSubmit={createLabel}>
+              <input
+                className="ghost-input"
+                placeholder="Criar nova label…"
+                value={newLabel}
+                onChange={(e) => setNewLabel(e.target.value)}
+              />
+            </form>
+          </div>
+        )}
       </div>
 
       <div className="panel-section">

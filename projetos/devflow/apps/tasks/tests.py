@@ -217,3 +217,4 @@ class SeedDemoCommandTestCase(TestCase):
             project.tasks.filter(status__name="In Progress").exists()
         )
         self.assertEqual(project.sections.count(), 2)
+        self.assertEqual(demo_workspace.labels.count(), 2)

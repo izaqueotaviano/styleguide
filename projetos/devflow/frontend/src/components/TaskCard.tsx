@@ -42,6 +42,19 @@ export default function TaskCard({
         <span className={`check-circle ${done ? "checked" : ""}`}>✓</span>
         {task.title}
       </div>
+      {task.labels.length > 0 && (
+        <div className="labels-row">
+          {task.labels.slice(0, 3).map((label) => (
+            <span
+              key={label.id}
+              className="label-chip"
+              style={{ background: `${label.color}26`, color: label.color }}
+            >
+              {label.name}
+            </span>
+          ))}
+        </div>
+      )}
       <div className="task-card-footer">
         <Avatar user={task.assignee} size={22} />
         <span className="task-key">{task.key}</span>

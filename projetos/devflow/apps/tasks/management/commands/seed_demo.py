@@ -10,7 +10,9 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 
 from apps.accounts.models import User
-from apps.projects.models import Section
+from decimal import Decimal
+
+from apps.projects.models import Label, Section
 from apps.projects.services import create_project
 from apps.tasks import services as task_services
 from apps.tasks.models import Task
@@ -54,6 +56,12 @@ class Command(BaseCommand):
             key="CORE",
             description="Projeto de demonstração do DevFlow.",
         )
+        backend_label = Label.objects.create(
+            workspace=workspace, name="backend", color="#8D84E8"
+        )
+        frontend_label = Label.objects.create(
+            workspace=workspace, name="frontend", color="#4ECBC4"
+        )
         sprint = Section.objects.create(project=project, name="Sprint atual", order=0)
         proximas = Section.objects.create(project=project, name="Próximas", order=1)
 
@@ -66,6 +74,8 @@ class Command(BaseCommand):
             priority=Task.Priority.URGENT,
             assignee=dev,
             section=sprint,
+            labels=[backend_label],
+            estimate=Decimal("2"),
         )
         feature = task_services.create_task(
             project=project,
@@ -76,6 +86,8 @@ class Command(BaseCommand):
             assignee=dev,
             reviewer=demo,
             section=sprint,
+            labels=[frontend_label],
+            estimate=Decimal("5"),
         )
         task_services.create_task(
             project=project,
