@@ -18,6 +18,7 @@ interface WorkspaceState {
   createWorkspace: (name: string) => Promise<void>;
   createProject: (name: string, key: string) => Promise<Project>;
   projectName: (id: string) => string;
+  reload: () => Promise<void>;
 }
 
 const WorkspaceContext = createContext<WorkspaceState | null>(null);
@@ -76,7 +77,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
 
   return (
     <WorkspaceContext.Provider
-      value={{ workspace, projects, members, loading, createWorkspace, createProject, projectName }}
+      value={{ workspace, projects, members, loading, createWorkspace, createProject, projectName, reload: loadAll }}
     >
       {children}
     </WorkspaceContext.Provider>

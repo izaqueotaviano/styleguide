@@ -55,6 +55,30 @@ class TaskServiceTestCase(TestCase):
         )
         self.assertIsNone(task.completed_at)
 
+    def test_move_task_inserts_at_position(self) -> None:
+        t1 = services.create_task(project=self.project, author=self.alice, title="A")
+        t2 = services.create_task(project=self.project, author=self.alice, title="B")
+        t3 = services.create_task(project=self.project, author=self.alice, title="C")
+        backlog = self.project.statuses.get(name="Backlog")
+
+        # Insere C no topo da coluna: A e B são deslocadas.
+        services.move_task(
+            task=t3, actor=self.alice, changes={"status": backlog, "order": 0}
+        )
+        t1.refresh_from_db(); t2.refresh_from_db(); t3.refresh_from_db()
+        self.assertEqual(t3.order, 0)
+        self.assertEqual((t1.order, t2.order), (1, 1))
+
+        # Insere B logo antes de A.
+        services.move_task(
+            task=t2, actor=self.alice, changes={"status": backlog, "order": t1.order}
+        )
+        t1.refresh_from_db(); t2.refresh_from_db(); t3.refresh_from_db()
+        ordering = sorted(
+            [t1, t2, t3], key=lambda task: (task.order, task.created_at)
+        )
+        self.assertEqual([task.title for task in ordering], ["C", "B", "A"])
+
     def test_assign_task_notifies_assignee(self) -> None:
         task = services.create_task(project=self.project, author=self.alice, title="X")
         services.assign_task(task=task, actor=self.alice, assignee=self.bob)
@@ -192,3 +216,4 @@ class SeedDemoCommandTestCase(TestCase):
         self.assertTrue(
             project.tasks.filter(status__name="In Progress").exists()
         )
+        self.assertEqual(project.sections.count(), 2)

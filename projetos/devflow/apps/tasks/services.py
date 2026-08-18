@@ -11,6 +11,7 @@ from typing import Any
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
+from django.db.models import F
 from django.utils import timezone
 
 from apps.accounts.models import User
@@ -227,15 +228,33 @@ def update_task(*, task: Task, actor: User, changes: dict[str, Any]) -> Task:
     return task
 
 
+@transaction.atomic
 def move_task(
     *,
     task: Task,
     actor: User,
     changes: dict[str, Any],
 ) -> Task:
-    """Move a tarefa de status/seção e/ou reposiciona no board."""
-    allowed = {k: v for k, v in changes.items() if k in ("status", "section", "order")}
-    return update_task(task=task, actor=actor, changes=allowed)
+    """Move a tarefa de status/seção e/ou a insere numa posição da coluna.
+
+    Quando ``order`` é informado, as tarefas da mesma coluna (status +
+    seção) com ``order`` maior ou igual são deslocadas para abrir espaço,
+    preservando a ordenação relativa mesmo com valores esparsos.
+    """
+    allowed = {k: v for k, v in changes.items() if k in ("status", "section")}
+    order = changes.get("order")
+    task = update_task(task=task, actor=actor, changes=allowed)
+    if order is not None:
+        Task.objects.filter(
+            project_id=task.project_id,
+            status_id=task.status_id,
+            section_id=task.section_id,
+            order__gte=order,
+        ).exclude(pk=task.pk).update(order=F("order") + 1)
+        if task.order != order:
+            task.order = order
+            task.save(update_fields=["order", "updated_at"])
+    return task
 
 
 def assign_task(*, task: Task, actor: User, assignee: User | None) -> Task:

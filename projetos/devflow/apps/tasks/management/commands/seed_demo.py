@@ -10,6 +10,7 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 
 from apps.accounts.models import User
+from apps.projects.models import Section
 from apps.projects.services import create_project
 from apps.tasks import services as task_services
 from apps.tasks.models import Task
@@ -53,6 +54,8 @@ class Command(BaseCommand):
             key="CORE",
             description="Projeto de demonstração do DevFlow.",
         )
+        sprint = Section.objects.create(project=project, name="Sprint atual", order=0)
+        proximas = Section.objects.create(project=project, name="Próximas", order=1)
 
         login_bug = task_services.create_task(
             project=project,
@@ -62,6 +65,7 @@ class Command(BaseCommand):
             type=Task.Type.BUG,
             priority=Task.Priority.URGENT,
             assignee=dev,
+            section=sprint,
         )
         feature = task_services.create_task(
             project=project,
@@ -71,6 +75,7 @@ class Command(BaseCommand):
             priority=Task.Priority.HIGH,
             assignee=dev,
             reviewer=demo,
+            section=sprint,
         )
         task_services.create_task(
             project=project,
@@ -85,6 +90,7 @@ class Command(BaseCommand):
             title="Extrair service layer do app de billing",
             type=Task.Type.TECH_DEBT,
             priority=Task.Priority.LOW,
+            section=proximas,
         )
         task_services.create_task(
             project=project,
